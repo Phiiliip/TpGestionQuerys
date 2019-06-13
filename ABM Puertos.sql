@@ -17,10 +17,10 @@ end
 
 -- Dar De baja
 GO
+drop procedure EliminarPuerto
 create Procedure EliminarPuerto(@NombrePuertoBorrado NVARCHAR(255)) 
 as 
 begin
-begin transaction
 declare @IdRecorrido int
 declare @IdTramo int
 declare MiCursor CURSOR for
@@ -44,10 +44,7 @@ where IdViaje in(select IdViaje from Viaje v
 where IdRecorrido = @IdRecorrido)
 
 delete from RecorridoPorTramo 
-where CodigoRecorrido = @IdRecorrido OR CodigoTramo = @IdTramo
-
-delete from Tramo
-where @NombrePuertoBorrado = Puerto_Llegada or @NombrePuertoBorrado = Puerto_Salida
+where CodigoRecorrido = @IdRecorrido
 
 delete from Viaje
 where IdViaje in (select IdViaje from Viaje v
@@ -58,13 +55,18 @@ where IdRecorrido = @IdRecorrido
 
 fetch next from MiCursor into @IdRecorrido, @IdTramo
 
-commit transaction
 END
 
 close MiCursor
 deallocate MiCursor
 
+delete from Tramo
+where Puerto_Salida = @NombrePuertoBorrado OR Puerto_Llegada = @NombrePuertoBorrado
+
 delete from Puerto 
 where Nombre = @NombrePuertoBorrado
 
 END
+
+
+
