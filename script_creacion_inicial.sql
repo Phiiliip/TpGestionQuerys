@@ -1,12 +1,5 @@
 use GD1C2019
 
-drop procedure CrearTablas
-
-create procedure CrearTablas
-as
-begin
---- Modelo 
-
 create table Modelo(
 IdModelo int IDENTITY(1,1) PRIMARY KEY,
 Descripcion nvarchar (50) NOT NULL,
@@ -178,6 +171,77 @@ IdRol int REFERENCES Rol(IdRol) Default(2),
 PRIMARY KEY(NombreUsuario,Contraseña)
 );
 
-END
-----
-Exec dbo.CrearTablas
+-- Rol
+insert dbo.Rol(Nombre)
+values('Cliente')
+
+insert dbo.Rol(Nombre)
+values('Administrador')
+
+--Cliente
+Insert dbo.Cliente(Nombre, Apellido,DNI,Direccion,Telefono,Mail,FechaNacimiento)select DISTINCT CLI_NOMBRE, CLI_APELLIDO, CLI_DNI, CLI_DIRECCION, CLI_TELEFONO, CLI_MAIL, CLI_FECHA_NAC
+from gd_esquema.Maestra
+
+--Modelo
+Insert dbo.Modelo(Descripcion) select DISTINCT CRUCERO_MODELO
+from gd_esquema.Maestra 
+order by CRUCERO_MODELO
+
+--Marca
+insert dbo.Marca(Descripcion) select DISTINCT CRU_FABRICANTE
+from gd_esquema.Maestra
+order by CRU_FABRICANTE
+
+-- Puerto
+insert dbo.Puerto(Nombre) select DISTINCT PUERTO_DESDE
+from gd_esquema.Maestra
+order by PUERTO_DESDE
+
+-- Tramo
+insert dbo.Tramo(Puerto_Salida,Puerto_Llegada,Precio) select DISTINCT PUERTO_DESDE, PUERTO_HASTA, RECORRIDO_PRECIO_BASE
+from gd_esquema.Maestra 
+
+-- Recorrido
+insert dbo.Recorrido(Codigo_Recorrido, PrecioTotal) select DISTINCT RECORRIDO_CODIGO, RECORRIDO_PRECIO_BASE
+from gd_esquema.Maestra
+
+-- Tipo Servicio
+insert dbo.Servicio(TipoServicio,Porcentaje) select DISTINCT CABINA_TIPO, CABINA_TIPO_PORC_RECARGO
+from gd_esquema.Maestra
+
+-- Crucero
+
+insert dbo.Crucero(IdCrucero,IdMarca,IdModelo,CantidadCabinas) select DISTINCT CRUCERO_IDENTIFICADOR, m.IdMarca, mo.IdModelo, (MAX(CABINA_NRO) * (MAX(CABINA_PISO)+1)) as TotalCabinas
+from gd_esquema.Maestra
+join dbo.Modelo as mo on (CRUCERO_MODELO = mo.Descripcion)
+join dbo.Marca as m on (CRU_FABRICANTE = m.Descripcion)
+group by CRUCERO_IDENTIFICADOR, m.IdMarca, mo.IdModelo
+
+-- Cabina Por Crucero
+
+insert dbo.CabinaPorCrucero(IdCrucero,TipoServicio, NroPiso, NroCabina, Estado, Fecha_Salida) select DISTINCT CRUCERO_IDENTIFICADOR, CABINA_TIPO, CABINA_PISO, CABINA_NRO, 'Ocupado',  FECHA_SALIDA 
+from gd_esquema.Maestra
+where RESERVA_CODIGO IS NULL
+order by CRUCERO_IDENTIFICADOR, FECHA_SALIDA 
+
+-- Viaje
+
+insert dbo.Viaje(IdCrucero, IdRecorrido, Fecha_Salida, Fecha_Llegada, CodigoRecorrido) select DISTINCT CRUCERO_IDENTIFICADOR, MAX(r.IdRecorrido), FECHA_SALIDA,FECHA_LLEGADA, MAX(RECORRIDO_CODIGO)
+from gd_esquema.Maestra
+join dbo.Recorrido as r on RECORRIDO_CODIGO = r.Codigo_Recorrido and RECORRIDO_PRECIO_BASE = r.PrecioTotal
+where RESERVA_FECHA IS NULL
+group by CRUCERO_IDENTIFICADOR, FECHA_SALIDA, FECHA_LLEGADA
+
+-- Pasaje
+
+insert dbo.Pasaje(IdCliente, IdViaje, NroPiso,NroCabina,Fecha_Salida, Fecha_Pago) select DISTINCT c.IdCliente,v.IdViaje, g.CABINA_PISO, g.CABINA_NRO, g.FECHA_SALIDA, g.PASAJE_FECHA_COMPRA
+from gd_esquema.Maestra as g
+join dbo.Cliente as c on c.Nombre = g.CLI_NOMBRE and c.Apellido = g.CLI_APELLIDO and c.DNI = g.CLI_DNI
+join dbo.Viaje as v on v.IdCrucero = g.CRUCERO_IDENTIFICADOR and v.Fecha_Salida = g.FECHA_SALIDA and v.CodigoRecorrido = g.RECORRIDO_CODIGO
+where g.RESERVA_FECHA IS NULL 
+
+insert dbo.Reserva(IdCliente, IdViaje, NroPiso,NroCabina,Fecha_Salida, Fecha_Reserva) select DISTINCT c.IdCliente,v.IdViaje, g.CABINA_PISO, g.CABINA_NRO, g.FECHA_SALIDA, g.RESERVA_FECHA
+from gd_esquema.Maestra as g
+join dbo.Cliente as c on c.Nombre = g.CLI_NOMBRE and c.Apellido = g.CLI_APELLIDO and c.DNI = g.CLI_DNI
+join dbo.Viaje as v on v.IdCrucero = g.CRUCERO_IDENTIFICADOR and v.Fecha_Salida = g.FECHA_SALIDA and v.CodigoRecorrido = g.RECORRIDO_CODIGO
+where g.PASAJE_FECHA_COMPRA IS NULL
