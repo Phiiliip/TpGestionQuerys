@@ -245,3 +245,5 @@ from gd_esquema.Maestra as g
 join dbo.Cliente as c on c.Nombre = g.CLI_NOMBRE and c.Apellido = g.CLI_APELLIDO and c.DNI = g.CLI_DNI
 join dbo.Viaje as v on v.IdCrucero = g.CRUCERO_IDENTIFICADOR and v.Fecha_Salida = g.FECHA_SALIDA and v.CodigoRecorrido = g.RECORRIDO_CODIGO
 where g.PASAJE_FECHA_COMPRA IS NULL
+
+
