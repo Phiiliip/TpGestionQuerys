@@ -3,7 +3,7 @@
 create procedure CrearPuerto(@NombrePuerto VARCHAR(50), @Descripcion NVARCHAR(255))
 as
 begin
-insert into dbo.Puerto(Nombre,Descripcion)
+insert into LOS_QUE_VAN_A_APROBAR.Puerto(Nombre,Descripcion)
 values(@NombrePuerto,@Descripcion)
 end
 
@@ -11,21 +11,20 @@ end
 create procedure ModificarPuerto(@NombrePuerto NVARCHAR(255), @Descripcion VARCHAR(50))
 as
 begin
-update dbo.Puerto
+update LOS_QUE_VAN_A_APROBAR.Puerto
 set Nombre = @NombrePuerto, Descripcion = @Descripcion
 end
 
 -- Dar De baja
 GO
-drop procedure EliminarPuerto
 create Procedure EliminarPuerto(@NombrePuertoBorrado NVARCHAR(255)) 
 as 
 begin
 declare @IdRecorrido int
 declare @IdTramo int
 declare MiCursor CURSOR for
-select CodigoRecorrido, IdTramo from RecorridoPorTramo r
-join Tramo t on t.IdTramo = r.CodigoTramo
+select CodigoRecorrido, IdTramo from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo r
+join LOS_QUE_VAN_A_APROBAR.Tramo t on t.IdTramo = r.CodigoTramo
 where Puerto_Llegada = @NombrePuertoBorrado or Puerto_Salida = @NombrePuertoBorrado
 
 open MiCursor 
@@ -35,22 +34,22 @@ while @@FETCH_STATUS = 0
 
 BEGIN
 
-delete from Reserva
+delete from LOS_QUE_VAN_A_APROBAR.Reserva
 where IdViaje in(select IdViaje from Viaje v
 where IdRecorrido = @IdRecorrido)
 
-delete from Pasaje
+delete from LOS_QUE_VAN_A_APROBAR.Pasaje
 where IdViaje in(select IdViaje from Viaje v
 where IdRecorrido = @IdRecorrido)
 
-delete from RecorridoPorTramo 
+delete from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo 
 where CodigoRecorrido = @IdRecorrido
 
-delete from Viaje
+delete from LOS_QUE_VAN_A_APROBAR.Viaje
 where IdViaje in (select IdViaje from Viaje v
 where IdRecorrido = @IdRecorrido)
 
-delete from Recorrido
+delete from LOS_QUE_VAN_A_APROBAR.Recorrido
 where IdRecorrido = @IdRecorrido
 
 fetch next from MiCursor into @IdRecorrido, @IdTramo
@@ -60,10 +59,10 @@ END
 close MiCursor
 deallocate MiCursor
 
-delete from Tramo
+delete from LOS_QUE_VAN_A_APROBAR.Tramo
 where Puerto_Salida = @NombrePuertoBorrado OR Puerto_Llegada = @NombrePuertoBorrado
 
-delete from Puerto 
+delete from LOS_QUE_VAN_A_APROBAR.Puerto 
 where Nombre = @NombrePuertoBorrado
 
 END
