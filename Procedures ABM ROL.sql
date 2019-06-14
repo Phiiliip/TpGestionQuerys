@@ -1,4 +1,4 @@
-create procedure NuevoRol (@NuevoNombre NVARCHAR(20))
+create procedure LOS_QUE_VAN_A_APROBAR.NuevoRol (@NuevoNombre NVARCHAR(20))
 as
 begin
 insert into LOS_QUE_VAN_A_APROBAR.Rol(Nombre)
@@ -7,7 +7,7 @@ end
 
 --
 
-create procedure NuevaFuncionalidad(@NuevoNombre NVARCHAR(255))
+create procedure LOS_QUE_VAN_A_APROBAR.NuevaFuncionalidad(@NuevoNombre NVARCHAR(255))
 as 
 begin
 insert into LOS_QUE_VAN_A_APROBAR.Funcionalidad(Descripcion)
@@ -16,7 +16,7 @@ end
 
 --
 
-create procedure FuncionalidadParaRol(@IdRol int, @IdFuncionalidad int)
+create procedure LOS_QUE_VAN_A_APROBAR.FuncionalidadParaRol(@IdRol int, @IdFuncionalidad int)
 as
 begin
 insert into LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol(IdFuncionalidad, IdRol) 
@@ -31,7 +31,7 @@ join LOS_QUE_VAN_A_APROBAR.Rol as r on r.IdRol = fpr.IdRol */
 
 --
 
-create procedure ModificarRol(@IdRol int, @Nombre NVARCHAR(20))
+create procedure LOS_QUE_VAN_A_APROBAR.ModificarRol(@IdRol int, @Nombre NVARCHAR(20))
 as
 begin
 update LOS_QUE_VAN_A_APROBAR.Rol
@@ -41,7 +41,7 @@ end
 
 --
 
-create procedure BajaRol(@IdRol int)
+create procedure LOS_QUE_VAN_A_APROBAR.BajaRol(@IdRol int)
 as
 begin
 update LOS_QUE_VAN_A_APROBAR.Rol
@@ -51,7 +51,7 @@ end
 
 --
 
-Create procedure AltaRol(@IdRol int)
+Create procedure LOS_QUE_VAN_A_APROBAR.AltaRol(@IdRol int)
 as
 begin
 update LOS_QUE_VAN_A_APROBAR.Rol
@@ -61,7 +61,7 @@ end
 
 --
 
-create procedure BajaFuncionalidadDelRol(@IdRol int, @IdFuncionalidad int)
+create procedure LOS_QUE_VAN_A_APROBAR.BajaFuncionalidadDelRol(@IdRol int, @IdFuncionalidad int)
 as
 begin
 update LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol
@@ -71,7 +71,7 @@ end
 
 --
 
-create procedure AltaFuncionalidadDelRol(@IdRol int, @IdFuncionalidad int)
+create procedure LOS_QUE_VAN_A_APROBAR.AltaFuncionalidadDelRol(@IdRol int, @IdFuncionalidad int)
 as
 begin
 update LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol

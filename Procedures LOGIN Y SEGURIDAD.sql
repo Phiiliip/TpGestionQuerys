@@ -1,6 +1,6 @@
 -- Validacion de Login
 
-create procedure ValidarAdministrador(@Username NVARCHAR(100), @Password NVARCHAR(100))
+create procedure LOS_QUE_VAN_A_APROBAR.ValidarAdministrador(@Username NVARCHAR(100), @Password NVARCHAR(100))
 as
 begin
 if exists(select * 
@@ -12,7 +12,7 @@ end
 
 
 -- Creacion de administrador
-create procedure CrearAdministrador(@Username NVARCHAR(100), @Password NVARCHAR(100))
+create procedure LOS_QUE_VAN_A_APROBAR.CrearAdministrador(@Username NVARCHAR(100), @Password NVARCHAR(100))
 as
 begin
 insert LOS_QUE_VAN_A_APROBAR.Administrador(NombreUsuario,Contraseña)

@@ -1,6 +1,6 @@
 -- Cuando se inhabilita un rol, todos los usuarios con ese rol pierden su rol
 
-create trigger SacarRolesDeUsuario on LOS_QUE_VAN_A_APROBAR.Rol after update
+create trigger LOS_QUE_VAN_A_APROBAR.SacarRolesDeUsuario on LOS_QUE_VAN_A_APROBAR.Rol after update
 as
 begin
 update c  
