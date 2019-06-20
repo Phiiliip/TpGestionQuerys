@@ -81,7 +81,9 @@ create table [LOS_QUE_VAN_A_APROBAR].Recorrido(
 IdRecorrido int IDENTITY(1,1) PRIMARY KEY,
 Codigo_Recorrido decimal(18,0) NOT NULL,
 Descripcion VARCHAR(50),
-PrecioTotal decimal(18,2)
+PrecioTotal decimal(18,2),
+Estado NVARCHAR(20) DEFAULT('Habilitado'),
+check(Estado in('Habilitado','Inhabilitado'))
 );
 
 -- Recorrido por tramo
