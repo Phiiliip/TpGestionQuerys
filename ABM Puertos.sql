@@ -7,8 +7,6 @@ insert into LOS_QUE_VAN_A_APROBAR.Puerto(Nombre,Descripcion)
 values(@NombrePuerto,@Descripcion)
 end
 
-
-
 -- Modificar puerto
 create procedure LOS_QUE_VAN_A_APROBAR.ModificarPuerto(@NombrePuerto NVARCHAR(255), @Descripcion VARCHAR(50))
 as
@@ -17,9 +15,10 @@ update LOS_QUE_VAN_A_APROBAR.Puerto
 set Nombre = @NombrePuerto, Descripcion = @Descripcion
 end
 
+
 -- Dar De baja
 GO
-create ProcedureLOS_QUE_VAN_A_APROBAR. EliminarPuerto(@NombrePuertoBorrado NVARCHAR(255)) 
+create Procedure LOS_QUE_VAN_A_APROBAR. EliminarPuerto(@NombrePuertoBorrado NVARCHAR(255)) 
 as 
 begin
 declare @IdRecorrido int
