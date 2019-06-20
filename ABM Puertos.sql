@@ -1,11 +1,13 @@
 
 -- Crear puerto
-create procedure LOS_QUE_VAN_A_APROBAR.CrearPuerto(@NombrePuerto VARCHAR(50), @Descripcion NVARCHAR(255))
+create procedure LOS_QUE_VAN_A_APROBAR.CrearPuerto(@NombrePuerto NVARCHAR(255), @Descripcion VARCHAR(50))
 as
 begin
 insert into LOS_QUE_VAN_A_APROBAR.Puerto(Nombre,Descripcion)
 values(@NombrePuerto,@Descripcion)
 end
+
+
 
 -- Modificar puerto
 create procedure LOS_QUE_VAN_A_APROBAR.ModificarPuerto(@NombrePuerto NVARCHAR(255), @Descripcion VARCHAR(50))
