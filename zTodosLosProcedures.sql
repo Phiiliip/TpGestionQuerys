@@ -5,11 +5,15 @@
 create procedure LOS_QUE_VAN_A_APROBAR.ValidarAdministrador(@Username NVARCHAR(100), @Password NVARCHAR(100))
 as
 begin
-if exists(select * 
-from LOS_QUE_VAN_A_APROBAR.Administrador
+if exists(select *  from LOS_QUE_VAN_A_APROBAR.Administrador
 where NombreUsuario = @Username and Contraseña = HASHBYTES('SHA2_256', @Password))
-return 1
-else return 0
+	begin
+	return 1
+	end
+else 
+	begin
+	return 0
+	end
 end
 
 
