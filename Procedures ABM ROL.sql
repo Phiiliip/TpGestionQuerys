@@ -41,12 +41,12 @@ end
 
 --
 
-create procedure LOS_QUE_VAN_A_APROBAR.BajaRol(@IdRol int)
+create procedure LOS_QUE_VAN_A_APROBAR.BajaRol(@NombreRol NVARCHAR(20))
 as
 begin
 update LOS_QUE_VAN_A_APROBAR.Rol
 set Estado = 'Inhabilitado'
-where IdRol = @Idrol
+where Nombre = @NombreRol
 end
 
 --

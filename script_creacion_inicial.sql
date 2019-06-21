@@ -106,10 +106,12 @@ CodigoRecorrido DECIMAL(18,0),
 check(Fecha_Llegada > Fecha_Salida),
 );
 
+-- Rol
+
 create table [LOS_QUE_VAN_A_APROBAR].Rol(
 IdRol int IDENTITY(1,1) PRIMARY KEY,
 Estado NVARCHAR(20) DEFAULT('Habilitado'),
-Nombre NVARCHAR(20),
+Nombre NVARCHAR(20) UNIQUE,
 check(Estado in('Habilitado','Inhabilitado'))
 );
 
@@ -251,6 +253,4 @@ from gd_esquema.Maestra as g
 join LOS_QUE_VAN_A_APROBAR.Cliente as c on c.Nombre = g.CLI_NOMBRE and c.Apellido = g.CLI_APELLIDO and c.DNI = g.CLI_DNI
 join LOS_QUE_VAN_A_APROBAR.Viaje as v on v.IdCrucero = g.CRUCERO_IDENTIFICADOR and v.Fecha_Salida = g.FECHA_SALIDA and v.CodigoRecorrido = g.RECORRIDO_CODIGO
 where g.PASAJE_FECHA_COMPRA IS NULL
-
-
 
