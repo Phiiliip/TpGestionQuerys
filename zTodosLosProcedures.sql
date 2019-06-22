@@ -274,7 +274,6 @@ END
 
 
 
-
 -- CRUCERO
 
 -- Creacion de un crucero
@@ -311,9 +310,10 @@ create procedure LOS_QUE_VAN_A_APROBAR.BajaDefinitiva(@IdCrucero NVARCHAR(50))
 as 
 begin
 update LOS_QUE_VAN_A_APROBAR.Crucero
-set IdCrucero = @IdCrucero, FechaAlta = NULL
+set FechaAlta = NULL
+where IdCrucero = @IdCrucero
 
-insert dbo.FueraDeServicio(IdCrucero,FechaBaja,MotivoBaja)
+insert LOS_QUE_VAN_A_APROBAR.FueraDeServicio(IdCrucero,FechaBaja,MotivoBaja)
 values(@IdCrucero, SYSDATETIME(), 'Vida util finalizada')
 
 end
@@ -324,9 +324,10 @@ create procedure LOS_QUE_VAN_A_APROBAR.BajaFueraDeServicio(@IdCrucero NVARCHAR(5
 as
 begin
 update LOS_QUE_VAN_A_APROBAR.Crucero
-set IdCrucero = @IdCrucero, FechaAlta = @FechaDeAlta
+set FechaAlta = @FechaDeAlta
+where IdCrucero = @IdCrucero
 
-insert dbo.FueraDeServicio(IdCrucero, FechaBaja, MotivoBaja, FechaReinicio)
+insert LOS_QUE_VAN_A_APROBAR.FueraDeServicio(IdCrucero, FechaBaja, MotivoBaja, FechaReinicio)
 values(@IdCrucero,SYSDATETIME(), 'Fuera de servicio', @FechaDeAlta)
 
 end
