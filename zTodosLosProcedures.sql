@@ -1,7 +1,7 @@
 -- LOGIN Y SEGURIDAD:
 
 -- Validacion de Login
-
+GO
 create procedure LOS_QUE_VAN_A_APROBAR.ValidarAdministrador(@Username NVARCHAR(100), @Password NVARCHAR(100))
 as
 begin
@@ -15,7 +15,7 @@ else
 	return 0
 	end
 end
-
+GO
 
 -- Creacion de administrador
 create procedure LOS_QUE_VAN_A_APROBAR.CrearAdministrador(@Username NVARCHAR(100), @Password NVARCHAR(100))
@@ -24,7 +24,7 @@ begin
 insert LOS_QUE_VAN_A_APROBAR.Administrador(NombreUsuario,Contraseña)
 values (@Username, HASHBYTES('SHA2_256', @Password))
 end
-
+GO
 --
 
 
@@ -44,7 +44,7 @@ begin
 insert into LOS_QUE_VAN_A_APROBAR.Rol(Nombre)
 values (@Nuevonombre)
 end
-
+GO
 --
 
 create procedure LOS_QUE_VAN_A_APROBAR.NuevaFuncionalidad(@NuevoNombre NVARCHAR(255))
@@ -53,7 +53,7 @@ begin
 insert into LOS_QUE_VAN_A_APROBAR.Funcionalidad(Descripcion)
 values(@NuevoNombre)
 end
-
+GO
 --
 
 create procedure LOS_QUE_VAN_A_APROBAR.FuncionalidadParaRol(@IdRol int, @IdFuncionalidad int)
@@ -62,7 +62,7 @@ begin
 insert into LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol(IdFuncionalidad, IdRol) 
 values (@IdFuncionalidad, @IdRol)
 end
-
+GO
 /* Consulta sobre rol y funcionalidad
 select f.Descripcion as Funcionalidad, r.nombre as Rol, fpr.Estado 
 from LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol as fpr
@@ -77,7 +77,7 @@ update LOS_QUE_VAN_A_APROBAR.Rol
 set Nombre = @Nombre
 where IdRol = @IdRol
 end
-
+GO
 --
 
 create procedure LOS_QUE_VAN_A_APROBAR.BajaRol(@NombreRol NVARCHAR(20))
@@ -87,7 +87,7 @@ update LOS_QUE_VAN_A_APROBAR.Rol
 set Estado = 'Inhabilitado'
 where Nombre = @NombreRol
 end
-
+GO
 --
 
 Create procedure LOS_QUE_VAN_A_APROBAR.AltaRol(@IdRol int)
@@ -97,7 +97,7 @@ update LOS_QUE_VAN_A_APROBAR.Rol
 set Estado = 'Habilitado'
 where IdRol = @Idrol
 end
-
+GO
 --
 
 create procedure LOS_QUE_VAN_A_APROBAR.BajaFuncionalidadDelRol(@IdRol int, @IdFuncionalidad int)
@@ -107,7 +107,7 @@ update LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol
 set Estado = 'Inhabilitado'
 where IdRol = @IdRol and IdFuncionalidad = @IdFuncionalidad
 end
-
+GO
 --
 
 create procedure LOS_QUE_VAN_A_APROBAR.AltaFuncionalidadDelRol(@IdRol int, @IdFuncionalidad int)
@@ -117,7 +117,7 @@ update LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol
 set Estado = 'Habilitado'
 where IdRol = @IdRol and IdFuncionalidad = @IdFuncionalidad
 end
-
+GO
 
 --
 
@@ -137,7 +137,7 @@ begin
 insert into LOS_QUE_VAN_A_APROBAR.Puerto(Nombre,Descripcion)
 values(@NombrePuerto,@Descripcion)
 end
-
+GO
 -- Modificar puerto
 create procedure LOS_QUE_VAN_A_APROBAR.ModificarPuerto(@NombrePuerto NVARCHAR(255), @Descripcion VARCHAR(50))
 as
@@ -145,7 +145,7 @@ begin
 update LOS_QUE_VAN_A_APROBAR.Puerto
 set Nombre = @NombrePuerto, Descripcion = @Descripcion
 end
-
+GO
 
 -- Dar De baja
 GO
@@ -198,7 +198,7 @@ delete from LOS_QUE_VAN_A_APROBAR.Puerto
 where Nombre = @NombrePuertoBorrado
 
 END
-
+GO
 --
 
 
@@ -215,7 +215,7 @@ BEGIN
 INSERT INTO LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido, Descripcion, PrecioTotal)
 VALUES (@CodigoRecorrido, @Descripcion, @Precio)
 END
-
+GO
 --Crear tramo de recorrido
 
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.InsertarTramoDeRecorrido(@CodigoRecorrido int, @CodigoTramo int, @Precio decimal(18,2))
@@ -224,7 +224,7 @@ BEGIN
 INSERT INTO LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido, CodigoTramo, PrecioTramo)
 values( @CodigoRecorrido, @CodigoTramo, @Precio)
 END
-
+GO
 --modificar tramo de recorrido
 
 Create PROCEDURE LOS_QUE_VAN_A_APROBAR.modificarTramoDeRecorrido(@IdRecorrido int,@TramoViejo int, @TramoNuevo int)
@@ -236,7 +236,7 @@ set CodigoTramo = @TramoNuevo
 WHERE CodigoRecorrido = @IdRecorrido AND CodigoTramo = @TramoViejo
 
 end
-
+GO
 
 
 --DAR DE BAJA RECORRIDO
@@ -263,7 +263,7 @@ PRINT 'Hay pasajes vendidos para un viaje que todavía no se realizó'
 END
 
 END
-
+GO
 
 
 
@@ -284,7 +284,7 @@ begin
 insert LOS_QUE_VAN_A_APROBAR.Crucero(IdCrucero,IdMarca,IdModelo,FechaAlta,CantidadCabinas)
 values(@IdCrucero,@IdMarca,@IdModelo,SYSDATETIME(), @CantidadCabinas)
 end
-
+GO
 -- Modificar Marca de crucero
 
 create procedure LOS_QUE_VAN_A_APROBAR.ModificarMarca(@IdCrucero NVARCHAR(50), @IdMarca int)
@@ -293,7 +293,7 @@ begin
 update LOS_QUE_VAN_A_APROBAR.Crucero
 set IdCrucero = @IdCrucero, IdMarca = @IdMarca
 end
-
+GO
 
 -- Modificar Modelo de crucero
 
@@ -303,7 +303,7 @@ begin
 update LOS_QUE_VAN_A_APROBAR.Crucero
 set IdCrucero = @IdCrucero, IdModelo = @IdModelo
 end
-
+GO
 -- Baja definitiva de crucero
 
 create procedure LOS_QUE_VAN_A_APROBAR.BajaDefinitiva(@IdCrucero NVARCHAR(50))
@@ -317,7 +317,7 @@ insert LOS_QUE_VAN_A_APROBAR.FueraDeServicio(IdCrucero,FechaBaja,MotivoBaja)
 values(@IdCrucero, SYSDATETIME(), 'Vida util finalizada')
 
 end
-
+GO
 -- Baja fuera de servicio
 
 create procedure LOS_QUE_VAN_A_APROBAR.BajaFueraDeServicio(@IdCrucero NVARCHAR(50), @FechaDeAlta datetime2(3))
@@ -331,7 +331,7 @@ insert LOS_QUE_VAN_A_APROBAR.FueraDeServicio(IdCrucero, FechaBaja, MotivoBaja, F
 values(@IdCrucero,SYSDATETIME(), 'Fuera de servicio', @FechaDeAlta)
 
 end
-
+GO
 
 
 --
@@ -354,6 +354,6 @@ begin
 insert LOS_QUE_VAN_A_APROBAR.Viaje(IdCrucero,IdRecorrido,Fecha_Salida,Fecha_Llegada,CodigoRecorrido)
 values(@IdCrucero,@IdRecorrido,@Fecha_Salida, @Fecha_Llegada, @CodigoRecorrido)
 end
-
+GO
 
 
