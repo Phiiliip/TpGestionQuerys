@@ -30,7 +30,7 @@ create table [LOS_QUE_VAN_A_APROBAR].Crucero(
 IdCrucero nvarchar(50) PRIMARY KEY,
 IdMarca int REFERENCES LOS_QUE_VAN_A_APROBAR.MARCA(IdMarca),
 IdModelo int REFERENCES LOS_QUE_VAN_A_APROBAR.MODELO(IdModelo),
-FechaAlta DATETIME2(3),
+FechaAlta DATETIME2(3) DEFAULT(SYSDATETIME()),
 CantidadCabinas int,
 );
 
