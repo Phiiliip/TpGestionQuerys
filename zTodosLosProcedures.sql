@@ -143,7 +143,8 @@ create procedure LOS_QUE_VAN_A_APROBAR.ModificarPuerto(@NombrePuerto NVARCHAR(25
 as
 begin
 update LOS_QUE_VAN_A_APROBAR.Puerto
-set Nombre = @NombrePuerto, Descripcion = @Descripcion
+set Descripcion = @Descripcion
+where Nombre = @NombrePuerto
 end
 GO
 
