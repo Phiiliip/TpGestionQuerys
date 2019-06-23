@@ -7,24 +7,14 @@ insert LOS_QUE_VAN_A_APROBAR.Crucero(IdCrucero,IdMarca,IdModelo,FechaAlta,Cantid
 values(@IdCrucero,@IdMarca,@IdModelo,SYSDATETIME(), @CantidadCabinas)
 end
 
--- Modificar Marca de crucero
+-- Modificar Marca y modelo de crucero
 
-create procedure LOS_QUE_VAN_A_APROBAR.ModificarMarca(@IdCrucero NVARCHAR(50), @IdMarca int)
+create procedure LOS_QUE_VAN_A_APROBAR.ModificarMarcaYModelo(@IdCrucero NVARCHAR(50), @IdMarca int, @IdModelo int)
 as 
 begin
 update LOS_QUE_VAN_A_APROBAR.Crucero
-set IdMarca = @IdMarca
+set IdMarca = @IdMarca, IdModelo = @IdModelo
 where IdCrucero = @IdCrucero
-end
-
-
--- Modificar Modelo de crucero
-
-create procedure LOS_QUE_VAN_A_APROBAR.ModificarModelo(@IdCrucero NVARCHAR(50), @IdModelo int)
-as
-begin
-update LOS_QUE_VAN_A_APROBAR.Crucero
-set IdCrucero = @IdCrucero, IdModelo = @IdModelo
 end
 
 -- Baja definitiva de crucero
@@ -34,7 +24,7 @@ as
 begin
 update LOS_QUE_VAN_A_APROBAR.Crucero
 set FechaAlta = NULL
-where IdCrucero = @IdCrucero,
+where IdCrucero = @IdCrucero
 
 insert LOS_QUE_VAN_A_APROBAR.FueraDeServicio(IdCrucero,FechaBaja,MotivoBaja)
 values(@IdCrucero, SYSDATETIME(), 'Vida util finalizada')
