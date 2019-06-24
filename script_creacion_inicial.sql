@@ -254,3 +254,15 @@ join LOS_QUE_VAN_A_APROBAR.Cliente as c on c.Nombre = g.CLI_NOMBRE and c.Apellid
 join LOS_QUE_VAN_A_APROBAR.Viaje as v on v.IdCrucero = g.CRUCERO_IDENTIFICADOR and v.Fecha_Salida = g.FECHA_SALIDA and v.CodigoRecorrido = g.RECORRIDO_CODIGO
 where g.PASAJE_FECHA_COMPRA IS NULL
 
+
+-- Funcionalidades
+
+insert LOS_QUE_VAN_A_APROBAR.Funcionalidad(Descripcion)
+values('Menu CyR'),('Menu puerto'),('Menu viajes'),('Menu rol'),('Menu crucero'),('Menu recorrido'),('Menu estadistico')
+
+-- Funcionalidad por rol
+
+insert LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol(IdFuncionalidad,IdRol)
+values (1,2),(2,2),(3,2),(4,2),(5,2),(6,2),(7,2)
+
+

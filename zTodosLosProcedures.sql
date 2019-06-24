@@ -28,14 +28,6 @@ GO
 --
 
 
-
-
-
-
-
-
-
-
 -- ROL
 
 create procedure LOS_QUE_VAN_A_APROBAR.NuevoRol (@NuevoNombre NVARCHAR(20))
