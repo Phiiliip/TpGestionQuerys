@@ -138,6 +138,7 @@ update LOS_QUE_VAN_A_APROBAR.Puerto
 set Descripcion = @Descripcion
 where Nombre = @NombrePuerto
 end
+
 GO
 
 -- Dar De baja
