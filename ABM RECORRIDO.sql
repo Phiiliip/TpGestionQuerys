@@ -78,10 +78,4 @@ END
 
 END
 
-ç
-select * from LOS_QUE_VAN_A_APROBAR.Recorrido
 
-
-select top 1 IdRecorrido from LOS_QUE_VAN_A_APROBAR.Recorrido ORDER BY IdRecorrido Desc
-
-select * from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo
