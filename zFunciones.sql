@@ -29,3 +29,16 @@ return @Resultado
 end
 
 select * from LOS_QUE_VAN_A_APROBAR.Administrador
+
+
+
+--- Id de rol dado un usuario
+
+create function LOS_QUE_VAN_A_APROBAR.IdDeRol(@Username NVARCHAR(100), @Password NVARCHAR(255))
+returns int as
+begin
+declare @Resultado int
+set @Resultado = (select top(1) IdRol from LOS_QUE_VAN_A_APROBAR.Administrador where NombreUsuario = @Username and Contraseña = HASHBYTES('SHA2_256',@Password))
+return @Resultado
+end
+
