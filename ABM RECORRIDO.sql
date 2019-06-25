@@ -11,7 +11,7 @@ select * from LOS_QUE_VAN_A_APROBAR.Recorrido
 
 --Crear tramo de recorrido
 DROP PROCEDURE LOS_QUE_VAN_A_APROBAR.InsertarTramoDeRecorrido
-CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.InsertarTramoDeRecorrido(@CodigoRecorrido int, @Puerto_Salida nvarchar(255), @Puerto_Llegada nvarchar(255), @Precio decimal(18,2))
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.InsertarTramoDeRecorrido(@CodigoRecorrido int, @Puerto_Salida nvarchar(255), @Puerto_Llegada nvarchar(255))
 AS
 BEGIN
 
@@ -25,8 +25,8 @@ END
 
 SET @CodigoTramo = (select top 1 IdTramo from LOS_QUE_VAN_A_APROBAR.Tramo where Puerto_Salida = @Puerto_Salida AND Puerto_Llegada = @Puerto_Llegada)
 
-INSERT INTO LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido, CodigoTramo, PrecioTramo)
-values( @CodigoRecorrido, @CodigoTramo, @Precio)
+INSERT INTO LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido, CodigoTramo)
+values( @CodigoRecorrido, @CodigoTramo)
 END
 
 --modificar tramo de recorrido
@@ -78,3 +78,10 @@ END
 
 END
 
+ç
+select * from LOS_QUE_VAN_A_APROBAR.Recorrido
+
+
+select top 1 IdRecorrido from LOS_QUE_VAN_A_APROBAR.Recorrido ORDER BY IdRecorrido Desc
+
+select * from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo
