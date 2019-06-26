@@ -588,7 +588,7 @@ END
 
 END
 
-
+GO
 
 
 
@@ -670,13 +670,21 @@ GO
 -- VIAJE
 
 -- Creacion de un viaje
+--HABRIA QUE MOSTRAR SOLO LOS CRUCEROS QUE ESTEN DISPONIBLES Y SOLO RECORRIDOS HABILITADOS
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.GenerarViaje(@IdCrucero nvarchar(50), @IdRecorrido int, @Fecha_Salida datetime2(3), @Fecha_Llegada datetime2(3), @CodigoRecorrido decimal(18,0), @Fecha_Actual nvarchar(255))
+AS
+BEGIN
 
-create procedure LOS_QUE_VAN_A_APROBAR.CrearViaje(@IdCrucero nvarchar(50), @IdRecorrido int, @Fecha_Salida datetime2(3), @Fecha_Llegada datetime2(3), @CodigoRecorrido decimal(18,0))
-as
-begin
-insert LOS_QUE_VAN_A_APROBAR.Viaje(IdCrucero,IdRecorrido,Fecha_Salida,Fecha_Llegada,CodigoRecorrido)
-values(@IdCrucero,@IdRecorrido,@Fecha_Salida, @Fecha_Llegada, @CodigoRecorrido)
-end
+if CONVERT(datetime2(3),@Fecha_Salida) > CONVERT(datetime2(3), @Fecha_Actual)
+BEGIN
+	insert into LOS_QUE_VAN_A_APROBAR.Viaje(IdCrucero, IdRecorrido, Fecha_Salida, Fecha_Llegada, CodigoRecorrido)
+	values(@IdCrucero, @IdRecorrido, @Fecha_Salida, @Fecha_Llegada, @CodigoRecorrido)
+END
+
+ELSE
+	Print 'la fecha de salida debe ser mayor a la actual' -- ver como pasar error a visual
+END
+
 GO
 
 
@@ -690,6 +698,20 @@ returns int as
 begin
 return (select TOP(1) IdRol from LOS_QUE_VAN_A_APROBAR.Rol order by IdRol DESC)
 end
+GO
+
+--FUNCION PARA SELECCIONAR CRUCEROS QUE PUEDEN VIAJAR
+CREATE FUNCTION LOS_QUE_VAN_A_APROBAR.crucerosParaViaje(@Fecha_SalidaNueva datetime2(3), @Fecha_LlegadaNueva datetime2(3))
+RETURNS TABLE
+AS	
+RETURN 
+select * from LOS_QUE_VAN_A_APROBAR.Crucero
+where IdCrucero not in
+ (select IdCrucero from LOS_QUE_VAN_A_APROBAR.Viaje
+  WHERE (convert(datetime2(3), Fecha_Salida) BETWEEN convert(datetime2(3), @Fecha_SalidaNueva) AND convert(datetime2(3), @Fecha_LlegadaNueva)) OR
+   convert(datetime2(3), Fecha_Llegada) BETWEEN CONVERT(datetime2(3), @Fecha_SalidaNueva) AND convert(datetime2(3), @Fecha_LlegadaNueva)
+   OR (convert(datetime2(3), @Fecha_SalidaNueva) > convert(datetime2(3),Fecha_Salida) AND convert(datetime2(3), @Fecha_LlegadaNueva) < convert(datetime2(3), Fecha_Llegada))
+   )
 GO
 
 
