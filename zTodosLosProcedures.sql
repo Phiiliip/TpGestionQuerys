@@ -1,22 +1,7 @@
 -- LOGIN Y SEGURIDAD:
 
--- Validacion de Login
-GO
-create procedure LOS_QUE_VAN_A_APROBAR.ValidarAdministrador(@Username NVARCHAR(100), @Password NVARCHAR(100))
-as
-begin
-if exists(select *  from LOS_QUE_VAN_A_APROBAR.Administrador
-where NombreUsuario = @Username and Contraseña = HASHBYTES('SHA2_256', @Password))
-	begin
-	return 1
-	end
-else 
-	begin
-	return 0
-	end
-end
-GO
 
+GO
 -- Creacion de administrador
 create procedure LOS_QUE_VAN_A_APROBAR.CrearAdministrador(@Username NVARCHAR(100), @Password NVARCHAR(100))
 as
@@ -26,6 +11,20 @@ values (@Username, HASHBYTES('SHA2_256', @Password))
 end
 GO
 --
+
+
+
+
+
+-----------------------------------------------------------ROL----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 
 
 -- ROL
@@ -55,11 +54,6 @@ insert into LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol(IdFuncionalidad, IdRol)
 values (@IdFuncionalidad, @IdRol)
 end
 GO
-/* Consulta sobre rol y funcionalidad
-select f.Descripcion as Funcionalidad, r.nombre as Rol, fpr.Estado 
-from LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol as fpr
-join LOS_QUE_VAN_A_APROBAR.Funcionalidad as f on fpr.IdFuncionalidad = f.IdFuncionalidad
-join LOS_QUE_VAN_A_APROBAR.Rol as r on r.IdRol = fpr.IdRol */
 
 --
 create procedure LOS_QUE_VAN_A_APROBAR.ModificarRol(@IdRol int, @Nombre NVARCHAR(20))
@@ -112,6 +106,19 @@ end
 GO
 
 --
+
+
+
+
+
+-------------------------------------------------------PUERTO--------------------------------------------------
+
+
+
+
+
+
+
 
 
 
@@ -199,6 +206,11 @@ GO
 
 
 
+---------------------------------------------------------------RECORRIDO------------------------------------------------------------------------
+
+
+
+
 
 
 -- Recorrido
@@ -263,12 +275,17 @@ GO
 
 
 
+----------------------------------------------------------------------CRUCERO--------------------------------------
+
+
+
+
+
 
 --
 
 
 
--- CRUCERO
 
 -- Creacion de un crucero
 
@@ -279,23 +296,14 @@ insert LOS_QUE_VAN_A_APROBAR.Crucero(IdCrucero,IdMarca,IdModelo,FechaAlta,Cantid
 values(@IdCrucero,@IdMarca,@IdModelo,SYSDATETIME(), @CantidadCabinas)
 end
 GO
--- Modificar Marca de crucero
+-- Modificar Marca y modelo de crucero
 
-create procedure LOS_QUE_VAN_A_APROBAR.ModificarMarca(@IdCrucero NVARCHAR(50), @IdMarca int)
+create procedure LOS_QUE_VAN_A_APROBAR.ModificarMarcaYModelo(@IdCrucero NVARCHAR(50), @IdMarca int, @IdModelo int)
 as 
 begin
 update LOS_QUE_VAN_A_APROBAR.Crucero
-set IdCrucero = @IdCrucero, IdMarca = @IdMarca
-end
-GO
-
--- Modificar Modelo de crucero
-
-create procedure LOS_QUE_VAN_A_APROBAR.ModificarModelo(@IdCrucero NVARCHAR(50), @IdModelo int)
-as
-begin
-update LOS_QUE_VAN_A_APROBAR.Crucero
-set IdCrucero = @IdCrucero, IdModelo = @IdModelo
+set IdMarca = @IdMarca, IdModelo = @IdModelo
+where IdCrucero = @IdCrucero
 end
 GO
 -- Baja definitiva de crucero
@@ -327,7 +335,6 @@ values(@IdCrucero,SYSDATETIME(), 'Fuera de servicio', @FechaDeAlta)
 end
 GO
 
-
 --
 
 
@@ -338,16 +345,181 @@ GO
 
 
 
+
+--------------------------------------------------------VIAJE------------------------------------------
+
+
+
 -- VIAJE
 
 -- Creacion de un viaje
 
-create procedure LOS_QUE_VAN_A_APROBAR.CrearViaje(@IdCrucero nvarchar(50), @IdRecorrido int, @Fecha_Salida datetime2(3), @Fecha_Llegada datetime2(3), @CodigoRecorrido decimal(18,0))
-as
-begin
-insert LOS_QUE_VAN_A_APROBAR.Viaje(IdCrucero,IdRecorrido,Fecha_Salida,Fecha_Llegada,CodigoRecorrido)
-values(@IdCrucero,@IdRecorrido,@Fecha_Salida, @Fecha_Llegada, @CodigoRecorrido)
-end
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.GenerarViaje(@IdCrucero nvarchar(50), @IdRecorrido int, @Fecha_Salida datetime2(3), @Fecha_Llegada datetime2(3), @CodigoRecorrido decimal(18,2), @Fecha_Actual nvarchar(255))
+AS
+BEGIN
+
+if CONVERT(datetime2(3),@Fecha_Salida) > CONVERT(datetime2(3), @Fecha_Actual)
+BEGIN
+	insert into LOS_QUE_VAN_A_APROBAR.Viaje(IdCrucero, IdRecorrido, Fecha_Salida, Fecha_Llegada, CodigoRecorrido)
+	values(@IdCrucero, @IdRecorrido, @Fecha_Salida, @Fecha_Llegada, @CodigoRecorrido)
+END
+
+ELSE
+	Print 'la fecha de salida debe ser mayor a la actual' -- ver como pasar error a visual
+END
+GO
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------PAGO Y CHEQUEO DE RESERVAS------------------------------------------
+
+
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.PagarReserva(@IdReserva int, @Fecha_Actual datetime2(3))
+AS
+BEGIN
+
+DECLARE @IdCliente int
+DECLARE @IdViaje int
+DECLARE @NroPiso int
+DECLARE @NroCabina int
+DECLARE @Fecha_Salida datetime2(3)
+
+
+IF EXISTS (SELECT 1 FROM LOS_QUE_VAN_A_APROBAR.Reserva WHERE IdReserva = @IdReserva AND Estado = 'Disponible')
+	BEGIN
+
+		select @IdCliente = IdCliente, @IdViaje = IdViaje, @NroPiso = NroPiso, @NroCabina = NroCabina, @Fecha_Salida = Fecha_Salida
+		from LOS_QUE_VAN_A_APROBAR.Reserva WHERE IdReserva = @IdReserva
+
+		update LOS_QUE_VAN_A_APROBAR.Reserva
+		set Estado = 'Expirada'
+		WHERE IdReserva = @IdReserva
+
+		insert into LOS_QUE_VAN_A_APROBAR.Pasaje(IdCliente, IdViaje, NroPiso, NroCabina, Fecha_Salida, Fecha_Pago)
+		VALUES(@IdCliente, @IdViaje, @NroPiso, @NroCabina, @Fecha_Salida, @Fecha_Actual)
+
+		
+	END
+END
+GO
+
+
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ChequearReservas(@Fecha_Actual datetime2(3))
+AS
+BEGIN
+DECLARE @IdReserva int
+DECLARE @IdCliente int
+DECLARE @IdViaje int
+DECLARE @NroPiso int
+DECLARE @NroCabina int
+DECLARE @Fecha_Salida datetime2(3)
+DECLARE @Fecha_Reserva datetime2(3)
+DECLARE @IdCrucero nvarchar(50)
+
+DECLARE cur CURSOR FOR
+ SELECT IdReserva, IdCliente, IdViaje, NroPiso, NroCabina, Fecha_Salida, Fecha_Reserva
+ FROM LOS_QUE_VAN_A_APROBAR.Reserva
+ WHERE convert(datetime2(3),Fecha_Salida) > convert(datetime2(3),@Fecha_Actual) AND Estado = 'Disponible'
+ 
+OPEN cur
+
+FETCH NEXT FROM cur into @IdReserva, @IdCliente, @IdViaje, @NroPiso, @NroCabina, @Fecha_Salida, @Fecha_Reserva
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+IF (DATEDIFF(day, convert(datetime2(3),@Fecha_Reserva), convert(datetime2(3),@Fecha_Actual)) > 3)
+	BEGIN
+	SET @IdCrucero = (SELECT TOP 1 IdCrucero FROM LOS_QUE_VAN_A_APROBAR.Viaje where IdViaje = @IdViaje)
+
+	update LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+	SET Estado = 'Disponible'
+	WHERE IdCrucero = @IdCrucero AND NroPiso = @NroPiso AND NroCabina = @NroCabina AND Fecha_Salida = @Fecha_Salida
+	
+	update LOS_QUE_VAN_A_APROBAR.Reserva
+		set Estado = 'Expirada'
+		WHERE IdReserva = @IdReserva
+	END
+	FETCH NEXT FROM cur into @IdReserva, @IdCliente, @IdViaje, @NroPiso, @NroCabina, @Fecha_Salida, @Fecha_Reserva
+END
+	close cur
+	DEALLOCATE cur
+END
+GO
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------COMPRA Y RESERVA ----------------------------------------------------
+
+
+create procedure LOS_QUE_VAN_A_APROBAR.GenerarPasaje(@IdCliente int, @IdViaje int, @TipoServicio nvarchar(255),@NroPiso int, @NroCabina int, @Fecha_Salida datetime2(3), @Fecha_Actual datetime2(3))
+AS
+BEGIN
+	
+	DECLARE @IdCrucero nvarchar(50)
+
+	set @IdCrucero = (select IdCrucero from LOS_QUE_VAN_A_APROBAR.Viaje WHERE IdViaje = @IdViaje)
+	
+	IF EXISTS (select 1 from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero 
+				WHERE IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND NroPiso = @NroPiso AND @NroCabina = @NroCabina)
+		BEGIN
+			INSERT INTO LOS_QUE_VAN_A_APROBAR.Pasaje(IdCliente, IdViaje, NroPiso, NroCabina, Fecha_Salida, Fecha_Pago)
+			values(@IdCliente, @IdViaje, @NroPiso, @NroCabina, convert(datetime2(3),@Fecha_Salida),convert(datetime2(3),@Fecha_Actual))
+
+			UPDATE LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			SET Estado = 'Ocupado'
+			WHERE IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND NroPiso = @NroPiso AND NroCabina = @NroCabina AND Fecha_Salida = @Fecha_Salida
+		END
+END
+GO
+
+
+
+create procedure LOS_QUE_VAN_A_APROBAR.GenerarReserva(@IdCliente int, @IdViaje int, @TipoServicio nvarchar(255),@NroPiso int, @NroCabina int, @Fecha_Salida datetime2(3), @Fecha_Actual datetime2(3))
+AS
+BEGIN
+	
+	DECLARE @IdCrucero nvarchar(50)
+
+	set @IdCrucero = (select IdCrucero from LOS_QUE_VAN_A_APROBAR.Viaje WHERE IdViaje = @IdViaje)
+	IF EXISTS (select 1 from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero 
+				WHERE IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND NroPiso = @NroPiso AND @NroCabina = @NroCabina)
+		BEGIN
+			INSERT INTO LOS_QUE_VAN_A_APROBAR.Reserva(IdCliente, IdViaje, NroPiso, NroCabina, Fecha_Salida, Fecha_Reserva)
+			values(@IdCliente, @IdViaje, @NroPiso, @NroCabina, convert(datetime2(3),@Fecha_Salida),convert(datetime2(3),@Fecha_Actual))
+
+			set @IdCrucero = (select top 1 IdCrucero from LOS_QUE_VAN_A_APROBAR.Viaje WHERE IdViaje = @IdViaje)
+
+			UPDATE LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			SET Estado = 'Ocupado'
+			WHERE IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND NroPiso = @NroPiso AND NroCabina = @NroCabina AND Fecha_Salida = @Fecha_Salida
+		END
+END
+GO
+
+
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.IngresarCliente(@Nombre nvarchar(255), @Apellido nvarchar(255), @DNI decimal(18,0), @Direccion nvarchar(255), @Telefono int, @Mail nvarchar(255), @FechaNacimiento datetime2(3))
+AS
+BEGIN
+	insert into LOS_QUE_VAN_A_APROBAR.Cliente(Nombre, Apellido, DNI, Direccion, Telefono, Mail, FechaNacimiento)
+	values(@Nombre, @Apellido, @DNI, @Direccion, @Telefono, @Mail, @FechaNacimiento)
+END
 GO
 
 
