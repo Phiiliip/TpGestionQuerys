@@ -674,7 +674,7 @@ CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.GenerarViaje(@IdCrucero nvarchar(50), @Id
 AS
 BEGIN
 
-DECLARE @Fecha_Actual nvarchar(255)
+DECLARE @Fecha_Actual datetime2(3)
 
 set @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 
@@ -707,7 +707,7 @@ CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.PagarReserva(@IdReserva int)
 AS
 BEGIN
 
-DECLARE @Fecha_Actual nvarchar(255)
+DECLARE @Fecha_Actual datetime2(3)
 
 DECLARE @IdCliente int
 DECLARE @IdViaje int
@@ -740,7 +740,7 @@ CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ChequearReservas
 AS
 BEGIN
 
-DECLARE @Fecha_Actual nvarchar(255)
+DECLARE @Fecha_Actual datetime2(3)
 
 DECLARE @IdReserva int
 DECLARE @IdCliente int
@@ -800,7 +800,7 @@ create procedure LOS_QUE_VAN_A_APROBAR.GenerarPasaje(@IdCliente int, @IdViaje in
 AS
 BEGIN
 	
-	DECLARE @Fecha_Actual nvarchar(255)
+	DECLARE @Fecha_Actual datetime2(3)
 	DECLARE @IdCrucero nvarchar(50)
 
 	set @IdCrucero = (select IdCrucero from LOS_QUE_VAN_A_APROBAR.Viaje WHERE IdViaje = @IdViaje)
@@ -825,7 +825,7 @@ create procedure LOS_QUE_VAN_A_APROBAR.GenerarReserva(@IdCliente int, @IdViaje i
 AS
 BEGIN
 	
-	DECLARE @Fecha_Actual nvarchar(255)
+	DECLARE @Fecha_Actual datetime2(3)
 	DECLARE @IdCrucero nvarchar(50)
 
 	set @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
