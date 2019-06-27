@@ -1,8 +1,8 @@
 use GD1C2019
 
-go
+/*go
 create schema [LOS_QUE_VAN_A_APROBAR]
-go
+go*/
 
 create table [LOS_QUE_VAN_A_APROBAR].Modelo(
 IdModelo int IDENTITY(1,1) PRIMARY KEY,
@@ -30,7 +30,7 @@ create table [LOS_QUE_VAN_A_APROBAR].Crucero(
 IdCrucero nvarchar(50) PRIMARY KEY,
 IdMarca int REFERENCES LOS_QUE_VAN_A_APROBAR.MARCA(IdMarca),
 IdModelo int REFERENCES LOS_QUE_VAN_A_APROBAR.MODELO(IdModelo),
-FechaAlta DATETIME2(3) DEFAULT(Select 1 from LOS_QUE_VAN_A_APROBAR.TablaFecha),
+FechaAlta DATETIME2(3) DEFAULT(SYSDATETIME()),
 CantidadCabinas int,
 );
 
