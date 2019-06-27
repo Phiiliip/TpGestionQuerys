@@ -670,9 +670,13 @@ GO
 
 -- Creacion de un viaje
 
-CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.GenerarViaje(@IdCrucero nvarchar(50), @IdRecorrido int, @Fecha_Salida datetime2(3), @Fecha_Llegada datetime2(3), @CodigoRecorrido decimal(18,2), @Fecha_Actual nvarchar(255))
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.GenerarViaje(@IdCrucero nvarchar(50), @IdRecorrido int, @Fecha_Salida datetime2(3), @Fecha_Llegada datetime2(3), @CodigoRecorrido decimal(18,2))
 AS
 BEGIN
+
+DECLARE @Fecha_Actual nvarchar(255)
+
+set @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 
 if CONVERT(datetime2(3),@Fecha_Salida) > CONVERT(datetime2(3), @Fecha_Actual)
 BEGIN
@@ -699,9 +703,11 @@ GO
 ------------------------------------------PAGO Y CHEQUEO DE RESERVAS------------------------------------------
 
 
-CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.PagarReserva(@IdReserva int, @Fecha_Actual datetime2(3))
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.PagarReserva(@IdReserva int)
 AS
 BEGIN
+
+DECLARE @Fecha_Actual nvarchar(255)
 
 DECLARE @IdCliente int
 DECLARE @IdViaje int
@@ -709,6 +715,7 @@ DECLARE @NroPiso int
 DECLARE @NroCabina int
 DECLARE @Fecha_Salida datetime2(3)
 
+set @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 
 IF EXISTS (SELECT 1 FROM LOS_QUE_VAN_A_APROBAR.Reserva WHERE IdReserva = @IdReserva AND Estado = 'Disponible')
 	BEGIN
@@ -729,9 +736,12 @@ END
 GO
 
 
-CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ChequearReservas(@Fecha_Actual datetime2(3))
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ChequearReservas
 AS
 BEGIN
+
+DECLARE @Fecha_Actual nvarchar(255)
+
 DECLARE @IdReserva int
 DECLARE @IdCliente int
 DECLARE @IdViaje int
@@ -740,6 +750,8 @@ DECLARE @NroCabina int
 DECLARE @Fecha_Salida datetime2(3)
 DECLARE @Fecha_Reserva datetime2(3)
 DECLARE @IdCrucero nvarchar(50)
+
+SET @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 
 DECLARE cur CURSOR FOR
  SELECT IdReserva, IdCliente, IdViaje, NroPiso, NroCabina, Fecha_Salida, Fecha_Reserva
@@ -784,14 +796,16 @@ GO
 ----------------------------------------------------COMPRA Y RESERVA ----------------------------------------------------
 
 
-create procedure LOS_QUE_VAN_A_APROBAR.GenerarPasaje(@IdCliente int, @IdViaje int, @TipoServicio nvarchar(255),@NroPiso int, @NroCabina int, @Fecha_Salida datetime2(3), @Fecha_Actual datetime2(3))
+create procedure LOS_QUE_VAN_A_APROBAR.GenerarPasaje(@IdCliente int, @IdViaje int, @TipoServicio nvarchar(255),@NroPiso int, @NroCabina int, @Fecha_Salida datetime2(3))
 AS
 BEGIN
 	
+	DECLARE @Fecha_Actual nvarchar(255)
 	DECLARE @IdCrucero nvarchar(50)
 
 	set @IdCrucero = (select IdCrucero from LOS_QUE_VAN_A_APROBAR.Viaje WHERE IdViaje = @IdViaje)
-	
+	SET @Fecha_Actual = (SELECT top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+
 	IF EXISTS (select 1 from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero 
 				WHERE IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND NroPiso = @NroPiso AND @NroCabina = @NroCabina)
 		BEGIN
@@ -807,13 +821,16 @@ GO
 
 
 
-create procedure LOS_QUE_VAN_A_APROBAR.GenerarReserva(@IdCliente int, @IdViaje int, @TipoServicio nvarchar(255),@NroPiso int, @NroCabina int, @Fecha_Salida datetime2(3), @Fecha_Actual datetime2(3))
+create procedure LOS_QUE_VAN_A_APROBAR.GenerarReserva(@IdCliente int, @IdViaje int, @TipoServicio nvarchar(255),@NroPiso int, @NroCabina int, @Fecha_Salida datetime2(3))
 AS
 BEGIN
 	
+	DECLARE @Fecha_Actual nvarchar(255)
 	DECLARE @IdCrucero nvarchar(50)
 
+	set @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 	set @IdCrucero = (select IdCrucero from LOS_QUE_VAN_A_APROBAR.Viaje WHERE IdViaje = @IdViaje)
+	
 	IF EXISTS (select 1 from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero 
 				WHERE IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND NroPiso = @NroPiso AND @NroCabina = @NroCabina)
 		BEGIN
@@ -833,6 +850,7 @@ GO
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.IngresarCliente(@Nombre nvarchar(255), @Apellido nvarchar(255), @DNI decimal(18,0), @Direccion nvarchar(255), @Telefono int, @Mail nvarchar(255), @FechaNacimiento datetime2(3))
 AS
 BEGIN
+
 	insert into LOS_QUE_VAN_A_APROBAR.Cliente(Nombre, Apellido, DNI, Direccion, Telefono, Mail, FechaNacimiento)
 	values(@Nombre, @Apellido, @DNI, @Direccion, @Telefono, @Mail, @FechaNacimiento)
 END
