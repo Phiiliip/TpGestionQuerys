@@ -1,8 +1,8 @@
 use GD1C2019
 
-/*go
+
 create schema [LOS_QUE_VAN_A_APROBAR]
-go*/
+
 
 create table [LOS_QUE_VAN_A_APROBAR].Modelo(
 IdModelo int IDENTITY(1,1) PRIMARY KEY,
