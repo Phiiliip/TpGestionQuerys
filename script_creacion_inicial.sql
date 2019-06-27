@@ -30,7 +30,7 @@ create table [LOS_QUE_VAN_A_APROBAR].Crucero(
 IdCrucero nvarchar(50) PRIMARY KEY,
 IdMarca int REFERENCES LOS_QUE_VAN_A_APROBAR.MARCA(IdMarca),
 IdModelo int REFERENCES LOS_QUE_VAN_A_APROBAR.MODELO(IdModelo),
-FechaAlta DATETIME2(3) DEFAULT(SYSDATETIME()),
+FechaAlta DATETIME2(3) DEFAULT(Select 1 from LOS_QUE_VAN_A_APROBAR.TablaFecha),
 CantidadCabinas int,
 );
 
@@ -180,6 +180,15 @@ Contraseña NVARCHAR(255),
 IdRol int REFERENCES LOS_QUE_VAN_A_APROBAR.Rol(IdRol) Default(2),
 PRIMARY KEY(NombreUsuario,Contraseña)
 );
+
+-- Tabla de fecha
+
+create table [LOS_QUE_VAN_A_APROBAR].TablaFecha(
+Fecha DATETIME2(3) PRIMARY KEY
+);
+
+insert LOS_QUE_VAN_A_APROBAR.TablaFecha(Fecha)
+values(SYSDATETIME())
 
 -- Rol
 insert LOS_QUE_VAN_A_APROBAR.Rol(Nombre)
@@ -873,6 +882,17 @@ GO
 exec LOS_QUE_VAN_A_APROBAR.TramosARecorrido
 GO
 
+
+--- Tabla fecha
+
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ActualizarFecha(@Fecha DATETIME2(3))
+as
+begin
+update LOS_QUE_VAN_A_APROBAR.TablaFecha
+set Fecha = @Fecha
+where Fecha = (select TOP(1) * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+end
+GO
 
 
 ------------------------------ Funciones ------------------------------

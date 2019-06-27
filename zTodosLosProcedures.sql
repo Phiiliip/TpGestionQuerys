@@ -96,6 +96,7 @@ end
 GO
 
 
+
 create procedure LOS_QUE_VAN_A_APROBAR.BajaFuncionalidadesDelRol(@IdRol int)
 as
 begin
@@ -531,5 +532,20 @@ BEGIN
 	values(@Nombre, @Apellido, @DNI, @Direccion, @Telefono, @Mail, @FechaNacimiento)
 END
 GO
+
+
+---------------- TABLA FECHA
+
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ActualizarFecha(@Fecha DATETIME2(3))
+as
+begin
+update LOS_QUE_VAN_A_APROBAR.TablaFecha
+set Fecha = @Fecha
+where Fecha = (select TOP(1) * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+end
+GO
+
+
+
 
 
