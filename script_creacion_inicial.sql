@@ -354,12 +354,12 @@ end
 GO
 --
 
-create procedure LOS_QUE_VAN_A_APROBAR.BajaRol(@NombreRol NVARCHAR(20))
+create procedure LOS_QUE_VAN_A_APROBAR.BajaRol(@IdRol int)
 as
 begin
 update LOS_QUE_VAN_A_APROBAR.Rol
 set Estado = 'Inhabilitado'
-where Nombre = @NombreRol
+where IdRol = @IdRol
 end
 GO
 --
@@ -374,7 +374,9 @@ end
 GO
 --
 
-create procedure LOS_QUE_VAN_A_APROBAR.BajaFuncionalidadDelRol(@IdRol int, @IdFuncionalidad int)
+
+--
+create procedure LOS_QUE_VAN_A_APROBAR.BajaFuncionalidadDeRol(@IdRol int, @IdFuncionalidad int)
 as
 begin
 update LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol
@@ -382,16 +384,35 @@ set Estado = 'Inhabilitado'
 where IdRol = @IdRol and IdFuncionalidad = @IdFuncionalidad
 end
 GO
+
+
+create procedure LOS_QUE_VAN_A_APROBAR.BajaFuncionalidadesDelRol(@IdRol int)
+as
+begin
+update LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol
+set Estado = 'Inhabilitado'
+where IdRol = @IdRol
+end
+GO
 --
 
 create procedure LOS_QUE_VAN_A_APROBAR.AltaFuncionalidadDelRol(@IdRol int, @IdFuncionalidad int)
 as
 begin
-update LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol
-set Estado = 'Habilitado'
-where IdRol = @IdRol and IdFuncionalidad = @IdFuncionalidad
+if EXISTS (SELECT 1 from LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol where IdRol = @IdRol and IdFuncionalidad = @IdFuncionalidad)
+begin
+	update LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol
+	set Estado = 'Habilitado'
+	where IdRol = @IdRol and IdFuncionalidad = @IdFuncionalidad
+end
+else
+begin
+	insert into LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol(IdFuncionalidad, IdRol)
+	values(@IdFuncionalidad, @IdRol)
+end
 end
 GO
+
 
 --
 
@@ -400,8 +421,6 @@ GO
 
 
 -------------------------------------------------------PUERTO--------------------------------------------------
-
-
 
 
 

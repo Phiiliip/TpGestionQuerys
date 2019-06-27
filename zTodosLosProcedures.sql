@@ -66,12 +66,12 @@ end
 GO
 --
 
-create procedure LOS_QUE_VAN_A_APROBAR.BajaRol(@NombreRol NVARCHAR(20))
+create procedure LOS_QUE_VAN_A_APROBAR.BajaRol(@IdRol int)
 as
 begin
 update LOS_QUE_VAN_A_APROBAR.Rol
 set Estado = 'Inhabilitado'
-where Nombre = @NombreRol
+where IdRol = @IdRol
 end
 GO
 --
@@ -86,12 +86,22 @@ end
 GO
 --
 
-create procedure LOS_QUE_VAN_A_APROBAR.BajaFuncionalidadDelRol(@IdRol int, @IdFuncionalidad int)
+create procedure LOS_QUE_VAN_A_APROBAR.BajaFuncionalidadDeRol(@IdRol int, @IdFuncionalidad int)
 as
 begin
 update LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol
 set Estado = 'Inhabilitado'
 where IdRol = @IdRol and IdFuncionalidad = @IdFuncionalidad
+end
+GO
+
+
+create procedure LOS_QUE_VAN_A_APROBAR.BajaFuncionalidadesDelRol(@IdRol int)
+as
+begin
+update LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol
+set Estado = 'Inhabilitado'
+where IdRol = @IdRol
 end
 GO
 --
