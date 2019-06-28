@@ -29,9 +29,6 @@ GO
 
 
 
-
-
-
 -- Recorridos
 
 create view LOS_QUE_VAN_A_APROBAR.BajaRecorrido
@@ -41,6 +38,17 @@ from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo as r
 join LOS_QUE_VAN_A_APROBAR.Tramo t on r.CodigoTramo = t.IdTramo
 join LOS_QUE_VAN_A_APROBAR.Puerto p1 on t.Puerto_Llegada = p1.Nombre
 join LOS_QUE_VAN_A_APROBAR.Puerto p2 on t.Puerto_Salida = p2.Nombre
+GO
+
+
+create view LOS_QUE_VAN_A_APROBAR.ListarRecorridos
+as
+select RPT.CodigoRecorrido, t1.Puerto_Salida as PuertoSalida, t2.Puerto_Llegada as PuertoLlegada, COUNT(CodigoTramo) as CantidadDeTramos, (select SUM(PrecioTramo) from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo where CodigoRecorrido = RPT.CodigoRecorrido) as PrecioDeRecorrido from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo as RPT
+join LOS_QUE_VAN_A_APROBAR.Tramo t1 on (select MIN(CodigoTramo) from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo where CodigoRecorrido = RPT.CodigoRecorrido) = t1.IdTramo
+join LOS_QUE_VAN_A_APROBAR.Tramo t2 on (select MAX(CodigoTramo) from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo where CodigoRecorrido = RPT.CodigoRecorrido) = t2.IdTramo
+group by RPT.CodigoRecorrido, t1.Puerto_Salida, t2.Puerto_Llegada
+GO
+
 
 
 
@@ -52,5 +60,9 @@ as
 select r.Nombre as Nombre, f.Descripcion as Descripcion, FPR.Estado as Estado from LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol FPR
 join LOS_QUE_VAN_A_APROBAR.Rol r on FPR.IdRol = r.IdRol
 join LOS_QUE_VAN_A_APROBAR.Funcionalidad f on FPR.IdFuncionalidad = f.IdFuncionalidad
+
+
+
+
 
 
