@@ -44,41 +44,13 @@ join LOS_QUE_VAN_A_APROBAR.Puerto p2 on t.Puerto_Salida = p2.Nombre
 
 
 
-create procedure LOS_QUE_VAN_A_APROBAR.TramosARecorrido
+
+-- Roles
+
+create view LOS_QUE_VAN_A_APROBAR.ListaRoles
 as
-begin
-declare @IdRecorrido int
-declare @CodigoTramo int
-declare @Precio decimal(18,2)
-declare @Incremental decimal(18,0)
-declare Cursorsito CURSOR FOR
-select IdTramo, Precio from LOS_QUE_VAN_A_APROBAR.Tramo
+select r.Nombre as Nombre, f.Descripcion as Descripcion, FPR.Estado as Estado from LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol FPR
+join LOS_QUE_VAN_A_APROBAR.Rol r on FPR.IdRol = r.IdRol
+join LOS_QUE_VAN_A_APROBAR.Funcionalidad f on FPR.IdFuncionalidad = f.IdFuncionalidad
 
-open Cursorsito
 
-set @Incremental = 250000
-
-fetch next from Cursorsito into @CodigoTramo, @Precio
-
-while @@FETCH_STATUS = 0
-
-begin
-
-insert into LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido,Descripcion,PrecioTotal)
-values(@Incremental,'Prueba',@Precio)
-
-set @IdRecorrido = (select TOP(1) IdRecorrido from LOS_QUE_VAN_A_APROBAR.Recorrido order by IdRecorrido DESC)
-
-insert into LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido, CodigoTramo, PrecioTramo)
-values(@IdRecorrido, @CodigoTramo, @Precio)
-
-set @Incremental = @Incremental +1
-
-fetch next from Cursorsito into @CodigoTramo, @Precio
-
-end
-
-close Cursorsito
-deallocate Cursorsito
-
-end

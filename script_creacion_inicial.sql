@@ -197,16 +197,6 @@ values('Cliente')
 insert LOS_QUE_VAN_A_APROBAR.Rol(Nombre)
 values('Administrador')
 
--- Administradores de prueba:
-
-insert LOS_QUE_VAN_A_APROBAR.Administrador(NombreUsuario,Contraseña)
-values('FelipeOtero','w23e')
-
-insert LOS_QUE_VAN_A_APROBAR.Administrador(NombreUsuario,Contraseña)
-values('EmanuelSedlar','w23e')
-
-insert LOS_QUE_VAN_A_APROBAR.Administrador(NombreUsuario,Contraseña)
-values('NicolasMarchesotti','w23e')
 
 --Cliente
 Insert LOS_QUE_VAN_A_APROBAR.Cliente(Nombre, Apellido,DNI,Direccion,Telefono,Mail,FechaNacimiento)select DISTINCT CLI_NOMBRE, CLI_APELLIDO, CLI_DNI, CLI_DIRECCION, CLI_TELEFONO, CLI_MAIL, CLI_FECHA_NAC
@@ -313,7 +303,14 @@ end
 GO
 --
 
+-- Administradores de prueba:
 
+exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'FelipeOtero', 'w23e'
+GO
+exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'EmanuelSedlar', 'w23e'
+GO
+exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'NicolasMarchesotti', 'w23e'
+GO
 
 
 -----------------------------------------------------------ROL----------------------------------------------------------------------------
