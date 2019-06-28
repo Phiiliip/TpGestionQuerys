@@ -346,6 +346,150 @@ values(@IdCrucero,SYSDATETIME(), 'Fuera de servicio', @FechaDeAlta)
 end
 GO
 
+declare @Fecha DATETIME2(3)
+set @Fecha = (select TOP(1) * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+exec LOS_QUE_VAN_A_APROBAR.GenerarCabinasPorCrucero 'OPQXIP-19781', @Fecha
+
+select * from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero order by Fecha_Salida DESC
+
+select CantidadCabinas from LOS_QUE_VAN_A_APROBAR.Crucero where IdCrucero = 'OPQXIP-19781'
+
+
+--- Generar las cabinas para un crucero
+
+
+
+create procedure LOS_QUE_VAN_A_APROBAR.GenerarCabinasPorCrucero(@IdCrucero NVARCHAR(50), @FechaViaje DATETIME2(3))
+as 
+begin
+declare @CantidadCabinasCrucero int
+declare @CantidadCabinaBalcon int
+declare @CantidadCabinaEstandar int
+declare @CantidadCabinaExterior int
+declare @CantidadCabinaEjecutivo int
+declare @CantidadCabinaSuite int
+declare @Incremental int
+declare @NroCabina int
+declare @NroPiso int
+
+
+
+set @CantidadCabinasCrucero = (select CantidadCabinas from LOS_QUE_VAN_A_APROBAR.Crucero where IdCrucero = @IdCrucero)
+
+set @CantidadCabinaBalcon = @CantidadCabinasCrucero / 5
+
+set @CantidadCabinaEstandar = @CantidadCabinasCrucero / 5
+
+set @CantidadCabinaExterior = @CantidadCabinasCrucero / 5
+
+set @CantidadCabinaEjecutivo = @CantidadCabinasCrucero / 5
+
+set @CantidadCabinaSuite  = @CantidadCabinasCrucero - @CantidadCabinaEjecutivo - @CantidadCabinaExterior - @CantidadCabinaEstandar - @CantidadCabinaBalcon
+
+set @Incremental = 0
+set @NroCabina = 0
+set @NroPiso = 0
+
+
+-- Cabinas Balcon
+while( @Incremental < @CantidadCabinaBalcon)
+begin
+	insert into LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero(IdCrucero,TipoServicio,NroPiso,NroCabina,Fecha_Salida)
+	values(@IdCrucero, 'Cabina Balcón ', @NroPiso, @NroCabina, @FechaViaje)
+	if(@NroCabina > @CantidadCabinasCrucero / 2)
+	begin
+		set @NroCabina = 0
+		set @NroPiso = @NroPiso + 1
+	end
+	else
+	begin
+		set @NroCabina = @NroCabina +1
+	end
+	set @Incremental = @Incremental +1
+end
+
+set @Incremental = 0
+
+
+-- Cabinas estandar
+while(@Incremental < @CantidadCabinaEstandar)
+begin
+	insert into LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero(IdCrucero,TipoServicio,NroPiso,NroCabina,Fecha_Salida)
+	values(@IdCrucero, 'Cabina estandar', @NroPiso, @NroCabina, @FechaViaje)
+	if(@NroCabina > @CantidadCabinasCrucero / 2)
+	begin
+		set @NroCabina = 0
+		set @NroPiso = @NroPiso + 1
+	end
+	else
+	begin
+		set @NroCabina = @NroCabina +1
+	end
+	set @Incremental = @Incremental +1
+end
+
+set @Incremental = 0
+
+-- Cabinas exterior
+while(@Incremental < @CantidadCabinaExterior)
+begin
+	insert into LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero(IdCrucero,TipoServicio,NroPiso,NroCabina,Fecha_Salida)
+	values(@IdCrucero, 'Cabina Exterior', @NroPiso, @NroCabina, @FechaViaje)
+	if(@NroCabina > @CantidadCabinasCrucero / 2)
+	begin
+		set @NroCabina = 0
+		set @NroPiso = @NroPiso + 1
+	end
+	else
+	begin
+		set @NroCabina = @NroCabina +1
+	end
+	set @Incremental = @Incremental +1
+end
+
+set @Incremental = 0
+
+-- Cabina ejecutivo
+
+while(@Incremental < @CantidadCabinaEjecutivo)
+begin
+	insert into LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero(IdCrucero,TipoServicio,NroPiso,NroCabina,Fecha_Salida)
+	values(@IdCrucero, 'Ejecutivo', @NroPiso, @NroCabina, @FechaViaje)
+	if(@NroCabina > @CantidadCabinasCrucero / 2)
+	begin
+		set @NroCabina = 0
+		set @NroPiso = @NroPiso + 1
+	end
+	else
+	begin
+		set @NroCabina = @NroCabina +1
+	end
+	set @Incremental = @Incremental +1
+end
+
+set @Incremental = 0
+
+-- Suite
+
+while(@Incremental < @CantidadCabinaSuite)
+begin
+	insert into LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero(IdCrucero,TipoServicio,NroPiso,NroCabina,Fecha_Salida)
+	values(@IdCrucero, 'Suite', @NroPiso, @NroCabina, @FechaViaje)
+	if(@NroCabina > @CantidadCabinasCrucero / 2)
+	begin
+		set @NroCabina = 0
+		set @NroPiso = @NroPiso + 1
+	end
+	else
+	begin
+		set @NroCabina = @NroCabina +1
+	end
+	set @Incremental = @Incremental +1
+end
+
+end
+
+GO
 --
 
 
@@ -426,6 +570,7 @@ IF EXISTS (SELECT 1 FROM LOS_QUE_VAN_A_APROBAR.Reserva WHERE IdReserva = @IdRese
 		
 	END
 END
+
 GO
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ChequearReservas
 AS
