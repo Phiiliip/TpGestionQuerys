@@ -1,8 +1,8 @@
 use GD1C2019
 
-
+GO
 create schema [LOS_QUE_VAN_A_APROBAR]
-
+GO
 
 create table [LOS_QUE_VAN_A_APROBAR].Modelo(
 IdModelo int IDENTITY(1,1) PRIMARY KEY,
@@ -303,7 +303,7 @@ end
 GO
 --
 
--- Administradores de prueba:
+-- Administradores de prueba
 
 exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'FelipeOtero', 'w23e'
 GO
@@ -313,7 +313,11 @@ exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'NicolasMarchesotti', 'w23e'
 GO
 
 
+
 -----------------------------------------------------------ROL----------------------------------------------------------------------------
+
+
+
 
 
 
@@ -380,8 +384,6 @@ end
 GO
 --
 
-
---
 create procedure LOS_QUE_VAN_A_APROBAR.BajaFuncionalidadDeRol(@IdRol int, @IdFuncionalidad int)
 as
 begin
@@ -390,6 +392,7 @@ set Estado = 'Inhabilitado'
 where IdRol = @IdRol and IdFuncionalidad = @IdFuncionalidad
 end
 GO
+
 
 
 create procedure LOS_QUE_VAN_A_APROBAR.BajaFuncionalidadesDelRol(@IdRol int)
@@ -405,20 +408,11 @@ GO
 create procedure LOS_QUE_VAN_A_APROBAR.AltaFuncionalidadDelRol(@IdRol int, @IdFuncionalidad int)
 as
 begin
-if EXISTS (SELECT 1 from LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol where IdRol = @IdRol and IdFuncionalidad = @IdFuncionalidad)
-begin
-	update LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol
-	set Estado = 'Habilitado'
-	where IdRol = @IdRol and IdFuncionalidad = @IdFuncionalidad
-end
-else
-begin
-	insert into LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol(IdFuncionalidad, IdRol)
-	values(@IdFuncionalidad, @IdRol)
-end
+update LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol
+set Estado = 'Habilitado'
+where IdRol = @IdRol and IdFuncionalidad = @IdFuncionalidad
 end
 GO
-
 
 --
 
@@ -427,6 +421,8 @@ GO
 
 
 -------------------------------------------------------PUERTO--------------------------------------------------
+
+
 
 
 
@@ -537,11 +533,18 @@ END
 GO
 --Crear tramo de recorrido
 
-CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.InsertarTramoDeRecorrido(@CodigoRecorrido int, @CodigoTramo int, @Precio decimal(18,2))
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.InsertarTramoDeRecorrido(@CodigoRecorrido int, @PuertoSalida NVARCHAR(255), @PuertoLlegada NVARCHAR(255), @Precio decimal(18,2))
 AS
 BEGIN
+declare @CodigoTramo int
+if NOT EXISTS(select 1 from LOS_QUE_VAN_A_APROBAR.Tramo t  where t.Puerto_Llegada = @PuertoLlegada and t.Puerto_Salida = @PuertoSalida)
+begin
+	insert into LOS_QUE_VAN_A_APROBAR.Tramo(Puerto_Salida, Puerto_Llegada, Precio)
+	values(@PuertoSalida, @PuertoLlegada, @Precio)
+end
+set @CodigoTramo = (select top(1) IdTramo from LOS_QUE_VAN_A_APROBAR.Tramo where Puerto_Llegada = @PuertoLlegada and Puerto_Salida = @PuertoSalida)
 INSERT INTO LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido, CodigoTramo, PrecioTramo)
-values( @CodigoRecorrido, @CodigoTramo, @Precio)
+values(@CodigoRecorrido, @CodigoTramo, @Precio)
 END
 GO
 --modificar tramo de recorrido
@@ -589,7 +592,6 @@ GO
 
 
 ----------------------------------------------------------------------CRUCERO--------------------------------------
-
 
 
 
@@ -649,7 +651,9 @@ end
 GO
 
 
--- Generar las cabinas por crucero para un viaje
+--- Generar las cabinas para un crucero
+
+
 
 create procedure LOS_QUE_VAN_A_APROBAR.GenerarCabinasPorCrucero(@IdCrucero NVARCHAR(50), @FechaViaje DATETIME2(3))
 as 
@@ -782,6 +786,8 @@ end
 end
 
 GO
+--
+
 
 
 
@@ -794,23 +800,21 @@ GO
 --------------------------------------------------------VIAJE------------------------------------------
 
 
-
 -- VIAJE
 
 -- Creacion de un viaje
 
-CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.GenerarViaje(@IdCrucero nvarchar(50), @IdRecorrido int, @Fecha_Salida datetime2(3), @Fecha_Llegada datetime2(3), @CodigoRecorrido decimal(18,2))
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.GenerarViaje(@IdCrucero nvarchar(50), @IdRecorrido int, @Fecha_Salida datetime2(3), @Fecha_Llegada datetime2(3))
 AS
 BEGIN
-
 DECLARE @Fecha_Actual datetime2(3)
 
-set @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+SET @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 
 if CONVERT(datetime2(3),@Fecha_Salida) > CONVERT(datetime2(3), @Fecha_Actual)
 BEGIN
-	insert into LOS_QUE_VAN_A_APROBAR.Viaje(IdCrucero, IdRecorrido, Fecha_Salida, Fecha_Llegada, CodigoRecorrido)
-	values(@IdCrucero, @IdRecorrido, @Fecha_Salida, @Fecha_Llegada, @CodigoRecorrido)
+	insert into LOS_QUE_VAN_A_APROBAR.Viaje(IdCrucero, IdRecorrido, Fecha_Salida, Fecha_Llegada)
+	values(@IdCrucero, @IdRecorrido, @Fecha_Salida, @Fecha_Llegada)
 END
 
 ELSE
@@ -837,14 +841,13 @@ AS
 BEGIN
 
 DECLARE @Fecha_Actual datetime2(3)
-
 DECLARE @IdCliente int
 DECLARE @IdViaje int
 DECLARE @NroPiso int
 DECLARE @NroCabina int
 DECLARE @Fecha_Salida datetime2(3)
 
-set @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+SET @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 
 IF EXISTS (SELECT 1 FROM LOS_QUE_VAN_A_APROBAR.Reserva WHERE IdReserva = @IdReserva AND Estado = 'Disponible')
 	BEGIN
@@ -862,15 +865,13 @@ IF EXISTS (SELECT 1 FROM LOS_QUE_VAN_A_APROBAR.Reserva WHERE IdReserva = @IdRese
 		
 	END
 END
+
 GO
-
-
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ChequearReservas
 AS
 BEGIN
 
 DECLARE @Fecha_Actual datetime2(3)
-
 DECLARE @IdReserva int
 DECLARE @IdCliente int
 DECLARE @IdViaje int
@@ -879,6 +880,7 @@ DECLARE @NroCabina int
 DECLARE @Fecha_Salida datetime2(3)
 DECLARE @Fecha_Reserva datetime2(3)
 DECLARE @IdCrucero nvarchar(50)
+
 
 SET @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 
@@ -933,7 +935,7 @@ BEGIN
 	DECLARE @IdCrucero nvarchar(50)
 
 	set @IdCrucero = (select IdCrucero from LOS_QUE_VAN_A_APROBAR.Viaje WHERE IdViaje = @IdViaje)
-	SET @Fecha_Actual = (SELECT top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+	set @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 
 	IF EXISTS (select 1 from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero 
 				WHERE IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND NroPiso = @NroPiso AND @NroCabina = @NroCabina)
@@ -957,8 +959,8 @@ BEGIN
 	DECLARE @Fecha_Actual datetime2(3)
 	DECLARE @IdCrucero nvarchar(50)
 
-	set @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 	set @IdCrucero = (select IdCrucero from LOS_QUE_VAN_A_APROBAR.Viaje WHERE IdViaje = @IdViaje)
+	set @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 	
 	IF EXISTS (select 1 from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero 
 				WHERE IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND NroPiso = @NroPiso AND @NroCabina = @NroCabina)
@@ -979,12 +981,25 @@ GO
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.IngresarCliente(@Nombre nvarchar(255), @Apellido nvarchar(255), @DNI decimal(18,0), @Direccion nvarchar(255), @Telefono int, @Mail nvarchar(255), @FechaNacimiento datetime2(3))
 AS
 BEGIN
-
 	insert into LOS_QUE_VAN_A_APROBAR.Cliente(Nombre, Apellido, DNI, Direccion, Telefono, Mail, FechaNacimiento)
 	values(@Nombre, @Apellido, @DNI, @Direccion, @Telefono, @Mail, @FechaNacimiento)
 END
 GO
 
+
+---------------- TABLA FECHA
+
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ActualizarFecha(@Fecha DATETIME2(3))
+as
+begin
+update LOS_QUE_VAN_A_APROBAR.TablaFecha
+set Fecha = @Fecha
+where Fecha = (select TOP(1) * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+end
+GO
+
+
+------- CREAR TODOS LOS RECORRIDOS POR TRAMO DE UN SOLO TRAMO YA GUARDADOS EN LA BD
 
 create procedure LOS_QUE_VAN_A_APROBAR.TramosARecorrido
 as
@@ -1008,6 +1023,7 @@ begin
 
 insert into LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido,Descripcion,PrecioTotal)
 values(@Incremental,'Prueba',@Precio)
+-- Roles
 
 set @IdRecorrido = (select TOP(1) IdRecorrido from LOS_QUE_VAN_A_APROBAR.Recorrido order by IdRecorrido DESC)
 
@@ -1023,26 +1039,36 @@ end
 close Cursorsito
 deallocate Cursorsito
 
-end
+end 
 GO
 
 exec LOS_QUE_VAN_A_APROBAR.TramosARecorrido
 GO
 
 
---- Tabla fecha
 
-CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ActualizarFecha(@Fecha DATETIME2(3))
-as
+
+
+------------------------------ Funciones ------------------------------
+
+
+
+
+
+-------------------------------------- Validacion de admin------------------------------------------
+
+
+-- Rol
+
+create function LOS_QUE_VAN_A_APROBAR.ObtenerNuevoRolInsertado()
+returns int as
 begin
-update LOS_QUE_VAN_A_APROBAR.TablaFecha
-set Fecha = @Fecha
-where Fecha = (select TOP(1) * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+return (select TOP(1) IdRol from LOS_QUE_VAN_A_APROBAR.Rol order by IdRol DESC)
 end
 GO
 
 
------------------------------- Funciones ------------------------------
+
 
 
 
@@ -1079,7 +1105,6 @@ set @Resultado = (select top(1) IdRol from LOS_QUE_VAN_A_APROBAR.Administrador w
 return @Resultado
 end
 GO
-
 
 
 ---------------------------------- COMPRA Y RESERVA ----------------------------------------------
@@ -1125,29 +1150,17 @@ where IdCrucero not in
 GO
 
 
+---- Recorrido
 
-
-
-
-
-
-
--------------------------------- Triggers------------------------------------------
-
--- ROL
-
--- Cuando se inhabilita un rol, todos los usuarios con ese rol pierden su rol
-
-create trigger LOS_QUE_VAN_A_APROBAR.SacarRolesDeUsuario on LOS_QUE_VAN_A_APROBAR.Rol after update
+create function LOS_QUE_VAN_A_APROBAR.PuertosDeRecorrido(@IdReco int)
+returns TABLE
 as
-begin
-update c  
-set IdRol = NULL
-from LOS_QUE_VAN_A_APROBAR.Cliente as c
-join Rol as r on r.IdRol = c.IdRol
-where r.Estado = 'Inhabilitado'
-end
+return 
+select DISTINCT p.Nombre as NombrePuerto from LOS_QUE_VAN_A_APROBAR.Puerto p
+join LOS_QUE_VAN_A_APROBAR.Tramo T on (T.Puerto_Llegada = p.Nombre or T.Puerto_Salida = p.Nombre)
+join LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo RPT on T.IdTramo = RPT.CodigoTramo
 GO
+
 
 
 
@@ -1185,3 +1198,65 @@ join LOS_QUE_VAN_A_APROBAR.Modelo as Mo on c.IdModelo = Mo.IdModelo
 where c.FechaAlta IS NULL
 GO
 
+
+
+-- Recorridos
+
+create view LOS_QUE_VAN_A_APROBAR.ListarRecorridos
+as
+select RPT.CodigoRecorrido, t1.Puerto_Salida as PuertoSalida, t2.Puerto_Llegada as PuertoLlegada, COUNT(CodigoTramo) as CantidadDeTramos, (select SUM(PrecioTramo) from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo where CodigoRecorrido = RPT.CodigoRecorrido) as PrecioDeRecorrido from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo as RPT
+join LOS_QUE_VAN_A_APROBAR.Tramo t1 on (select MIN(CodigoTramo) from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo where CodigoRecorrido = RPT.CodigoRecorrido) = t1.IdTramo
+join LOS_QUE_VAN_A_APROBAR.Tramo t2 on (select MAX(CodigoTramo) from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo where CodigoRecorrido = RPT.CodigoRecorrido) = t2.IdTramo
+group by RPT.CodigoRecorrido, t1.Puerto_Salida, t2.Puerto_Llegada
+GO
+
+
+
+
+
+-- Roles
+
+create view LOS_QUE_VAN_A_APROBAR.ListaRoles
+as
+select r.Nombre as Nombre, f.Descripcion as Descripcion, FPR.Estado as Estado from LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol FPR
+join LOS_QUE_VAN_A_APROBAR.Rol r on FPR.IdRol = r.IdRol
+join LOS_QUE_VAN_A_APROBAR.Funcionalidad f on FPR.IdFuncionalidad = f.IdFuncionalidad
+GO
+
+
+
+---------------------- TRIGGERS --------------------------------
+
+
+------ ----------------- Viaje ------------------------
+
+
+create trigger LOS_QUE_VAN_A_APROBAR.CrearCabinasPorCrucero on LOS_QUE_VAN_A_APROBAR.Viaje after insert
+as
+begin
+declare @IdCrucero NVARCHAR(50)
+declare @FechaSalida DATETIME2(3)
+
+set @IdCrucero = (select TOP(1) IdCrucero from inserted)
+set @FechaSalida = (select TOP(1) Fecha_Salida from inserted)
+
+exec LOS_QUE_VAN_A_APROBAR.GenerarCabinasPorCrucero @IdCrucero, @FechaSalida
+
+end
+
+GO
+
+-- ROL
+
+-- Cuando se inhabilita un rol, todos los usuarios con ese rol pierden su rol
+GO
+create trigger LOS_QUE_VAN_A_APROBAR.SacarRolesDeUsuario on LOS_QUE_VAN_A_APROBAR.Rol after update
+as
+begin
+update c  
+set IdRol = NULL
+from LOS_QUE_VAN_A_APROBAR.Cliente as c
+join Rol as r on r.IdRol = c.IdRol
+where r.Estado = 'Inhabilitado'
+end
+GO

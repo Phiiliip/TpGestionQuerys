@@ -235,14 +235,23 @@ END
 GO
 --Crear tramo de recorrido
 
-CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.InsertarTramoDeRecorrido(@CodigoRecorrido int, @CodigoTramo int, @Precio decimal(18,2))
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.InsertarTramoDeRecorrido(@CodigoRecorrido int, @PuertoSalida NVARCHAR(255), @PuertoLlegada NVARCHAR(255), @Precio decimal(18,2))
 AS
 BEGIN
+declare @CodigoTramo int
+if NOT EXISTS(select 1 from LOS_QUE_VAN_A_APROBAR.Tramo t  where t.Puerto_Llegada = @PuertoLlegada and t.Puerto_Salida = @PuertoSalida)
+begin
+	insert into LOS_QUE_VAN_A_APROBAR.Tramo(Puerto_Salida, Puerto_Llegada, Precio)
+	values(@PuertoSalida, @PuertoLlegada, @Precio)
+end
+set @CodigoTramo = (select top(1) IdTramo from LOS_QUE_VAN_A_APROBAR.Tramo where Puerto_Llegada = @PuertoLlegada and Puerto_Salida = @PuertoSalida)
 INSERT INTO LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido, CodigoTramo, PrecioTramo)
-values( @CodigoRecorrido, @CodigoTramo, @Precio)
+values(@CodigoRecorrido, @CodigoTramo, @Precio)
 END
 GO
 --modificar tramo de recorrido
+
+select * from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo
 
 Create PROCEDURE LOS_QUE_VAN_A_APROBAR.modificarTramoDeRecorrido(@IdRecorrido int,@TramoViejo int, @TramoNuevo int)
 AS
@@ -504,12 +513,11 @@ GO
 --------------------------------------------------------VIAJE------------------------------------------
 
 
-
 -- VIAJE
 
 -- Creacion de un viaje
 
-CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.GenerarViaje(@IdCrucero nvarchar(50), @IdRecorrido int, @Fecha_Salida datetime2(3), @Fecha_Llegada datetime2(3), @CodigoRecorrido decimal(18,2))
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.GenerarViaje(@IdCrucero nvarchar(50), @IdRecorrido int, @Fecha_Salida datetime2(3), @Fecha_Llegada datetime2(3))
 AS
 BEGIN
 DECLARE @Fecha_Actual datetime2(3)
@@ -518,8 +526,8 @@ SET @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 
 if CONVERT(datetime2(3),@Fecha_Salida) > CONVERT(datetime2(3), @Fecha_Actual)
 BEGIN
-	insert into LOS_QUE_VAN_A_APROBAR.Viaje(IdCrucero, IdRecorrido, Fecha_Salida, Fecha_Llegada, CodigoRecorrido)
-	values(@IdCrucero, @IdRecorrido, @Fecha_Salida, @Fecha_Llegada, @CodigoRecorrido)
+	insert into LOS_QUE_VAN_A_APROBAR.Viaje(IdCrucero, IdRecorrido, Fecha_Salida, Fecha_Llegada)
+	values(@IdCrucero, @IdRecorrido, @Fecha_Salida, @Fecha_Llegada)
 END
 
 ELSE
@@ -701,6 +709,48 @@ update LOS_QUE_VAN_A_APROBAR.TablaFecha
 set Fecha = @Fecha
 where Fecha = (select TOP(1) * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 end
+GO
+
+
+create procedure LOS_QUE_VAN_A_APROBAR.TramosARecorrido
+as
+begin
+declare @IdRecorrido int
+declare @CodigoTramo int
+declare @Precio decimal(18,2)
+declare @Incremental decimal(18,0)
+declare Cursorsito CURSOR FOR
+select IdTramo, Precio from LOS_QUE_VAN_A_APROBAR.Tramo
+
+open Cursorsito
+
+set @Incremental = 250000
+
+fetch next from Cursorsito into @CodigoTramo, @Precio
+
+while @@FETCH_STATUS = 0
+
+begin
+
+insert into LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido,Descripcion,PrecioTotal)
+values(@Incremental,'Prueba',@Precio)
+-- Roles
+
+set @IdRecorrido = (select TOP(1) IdRecorrido from LOS_QUE_VAN_A_APROBAR.Recorrido order by IdRecorrido DESC)
+
+insert into LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido, CodigoTramo, PrecioTramo)
+values(@IdRecorrido, @CodigoTramo, @Precio)
+
+set @Incremental = @Incremental +1
+
+fetch next from Cursorsito into @CodigoTramo, @Precio
+
+end
+
+close Cursorsito
+deallocate Cursorsito
+
+end 
 GO
 
 

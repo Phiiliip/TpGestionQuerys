@@ -5,7 +5,7 @@ returns int as
 begin
 return (select TOP(1) IdRol from LOS_QUE_VAN_A_APROBAR.Rol order by IdRol DESC)
 end
-
+GO
 
 
 
@@ -31,8 +31,7 @@ set @Resultado = 0
 end
 return @Resultado
 end
-
-select * from LOS_QUE_VAN_A_APROBAR.Administrador
+GO
 
 
 
@@ -45,7 +44,7 @@ declare @Resultado int
 set @Resultado = (select top(1) IdRol from LOS_QUE_VAN_A_APROBAR.Administrador where NombreUsuario = @Username and Contraseña = HASHBYTES('SHA2_256',@Password))
 return @Resultado
 end
-
+GO
 
 
 
@@ -69,7 +68,7 @@ RETURN
 	AND @Puerto_Llegada IN (SELECT Puerto_Llegada from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo r
 							JOIN LOS_QUE_VAN_A_APROBAR.Tramo t ON (r.CodigoTramo = t.IdTramo)
 							where r.CodigoRecorrido = V.IdRecorrido)
-
+GO
 
 
 
@@ -92,6 +91,18 @@ where IdCrucero not in
    convert(datetime2(3), Fecha_Llegada) BETWEEN CONVERT(datetime2(3), @Fecha_SalidaNueva) AND convert(datetime2(3), @Fecha_LlegadaNueva)
    OR (convert(datetime2(3), @Fecha_SalidaNueva) > convert(datetime2(3),Fecha_Salida) AND convert(datetime2(3), @Fecha_LlegadaNueva) < convert(datetime2(3), Fecha_Llegada))
    )
+GO
 
+
+---- Recorrido
+
+create function LOS_QUE_VAN_A_APROBAR.PuertosDeRecorrido(@IdReco int)
+returns TABLE
+as
+return 
+select DISTINCT p.Nombre as NombrePuerto from LOS_QUE_VAN_A_APROBAR.Puerto p
+join LOS_QUE_VAN_A_APROBAR.Tramo T on (T.Puerto_Llegada = p.Nombre or T.Puerto_Salida = p.Nombre)
+join LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo RPT on T.IdTramo = RPT.CodigoTramo
+GO
 
 
