@@ -103,6 +103,21 @@ return
 select DISTINCT p.Nombre as NombrePuerto from LOS_QUE_VAN_A_APROBAR.Puerto p
 join LOS_QUE_VAN_A_APROBAR.Tramo T on (T.Puerto_Llegada = p.Nombre or T.Puerto_Salida = p.Nombre)
 join LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo RPT on T.IdTramo = RPT.CodigoTramo
+where RPT.CodigoRecorrido = @IdReco
+GO
+
+
+-- Puertos extremos de un recorrido
+create function LOS_QUE_VAN_A_APROBAR.PuertosExtremos(@IdReco int)
+returns NVARCHAR(255)
+as
+begin
+declare @Retorno NVARCHAR(255)
+set @Retorno = (select TOP(1) ('Puerto salida: ' + t1.Puerto_Salida + ' - Puerto llegada: ' + t2.Puerto_Llegada) from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo RPT
+join LOS_QUE_VAN_A_APROBAR.Tramo t1 on t1.IdTramo = (select TOP(1) MIN(CodigoTramo) from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo rpt where rpt.CodigoRecorrido = @IdReco)
+join LOS_QUE_VAN_A_APROBAR.Tramo t2 on t2.IdTramo = (select TOP(1) MAX(CodigoTramo) from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo ptr where ptr.CodigoRecorrido = @IdReco))
+return @Retorno
+end
 GO
 
 

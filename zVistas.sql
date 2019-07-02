@@ -51,3 +51,8 @@ select r.Nombre as Nombre, f.Descripcion as Descripcion, FPR.Estado as Estado fr
 join LOS_QUE_VAN_A_APROBAR.Rol r on FPR.IdRol = r.IdRol
 join LOS_QUE_VAN_A_APROBAR.Funcionalidad f on FPR.IdFuncionalidad = f.IdFuncionalidad
 GO
+
+
+
+
+
