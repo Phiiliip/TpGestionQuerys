@@ -305,12 +305,9 @@ GO
 
 -- Administradores de prueba
 
-exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'FelipeOtero', 'w23e'
+exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'admin', 'w23e'
 GO
-exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'EmanuelSedlar', 'w23e'
-GO
-exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'NicolasMarchesotti', 'w23e'
-GO
+
 
 
 
