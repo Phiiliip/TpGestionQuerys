@@ -924,55 +924,69 @@ GO
 ----------------------------------------------------COMPRA Y RESERVA ----------------------------------------------------
 
 
-create procedure LOS_QUE_VAN_A_APROBAR.GenerarPasaje(@IdCliente int, @IdViaje int, @TipoServicio nvarchar(255),@NroPiso int, @NroCabina int, @Fecha_Salida datetime2(3))
+
+create procedure LOS_QUE_VAN_A_APROBAR.GenerarPasaje(@IdCliente int, @IdViaje int, @TipoServicio nvarchar(255), @Fecha_Salida datetime2(3))
 AS
 BEGIN
 	
 	DECLARE @Fecha_Actual datetime2(3)
 	DECLARE @IdCrucero nvarchar(50)
+	DECLARE @NroPiso int
+	DECLARE @NroCabina int
 
 	set @IdCrucero = (select IdCrucero from LOS_QUE_VAN_A_APROBAR.Viaje WHERE IdViaje = @IdViaje)
 	set @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+	select TOP 1 @NroPiso = NroPiso, @NroCabina = NroCabina from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+	where IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible'
+
 
 	IF EXISTS (select 1 from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero 
 				WHERE IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND NroPiso = @NroPiso AND @NroCabina = @NroCabina)
 		BEGIN
+
+
 			INSERT INTO LOS_QUE_VAN_A_APROBAR.Pasaje(IdCliente, IdViaje, NroPiso, NroCabina, Fecha_Salida, Fecha_Pago)
 			values(@IdCliente, @IdViaje, @NroPiso, @NroCabina, convert(datetime2(3),@Fecha_Salida),convert(datetime2(3),@Fecha_Actual))
 
 			UPDATE LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
 			SET Estado = 'Ocupado'
-			WHERE IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND NroPiso = @NroPiso AND NroCabina = @NroCabina AND Fecha_Salida = @Fecha_Salida
+			WHERE IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND NroPiso = @NroPiso AND NroCabina = @NroCabina AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date)
 		END
 END
 GO
 
 
 
-create procedure LOS_QUE_VAN_A_APROBAR.GenerarReserva(@IdCliente int, @IdViaje int, @TipoServicio nvarchar(255),@NroPiso int, @NroCabina int, @Fecha_Salida datetime2(3))
+create procedure LOS_QUE_VAN_A_APROBAR.GenerarReserva(@IdCliente int, @IdViaje int, @TipoServicio nvarchar(255), @Fecha_Salida datetime2(3))
 AS
 BEGIN
 	
 	DECLARE @Fecha_Actual datetime2(3)
 	DECLARE @IdCrucero nvarchar(50)
+	DECLARE @NroPiso int
+	DECLARE @NroCabina int
 
 	set @IdCrucero = (select IdCrucero from LOS_QUE_VAN_A_APROBAR.Viaje WHERE IdViaje = @IdViaje)
 	set @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
-	
+	select TOP 1 @NroPiso = NroPiso, @NroCabina = NroCabina from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+	where IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible'
+
+
 	IF EXISTS (select 1 from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero 
 				WHERE IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND NroPiso = @NroPiso AND @NroCabina = @NroCabina)
 		BEGIN
-			INSERT INTO LOS_QUE_VAN_A_APROBAR.Reserva(IdCliente, IdViaje, NroPiso, NroCabina, Fecha_Salida, Fecha_Reserva)
-			values(@IdCliente, @IdViaje, @NroPiso, @NroCabina, convert(datetime2(3),@Fecha_Salida),convert(datetime2(3),@Fecha_Actual))
 
-			set @IdCrucero = (select top 1 IdCrucero from LOS_QUE_VAN_A_APROBAR.Viaje WHERE IdViaje = @IdViaje)
+
+			INSERT INTO LOS_QUE_VAN_A_APROBAR.Reserva(IdCliente, IdViaje, NroPiso, NroCabina, Fecha_Salida, Fecha_Reserva)
+			values(@IdCliente, @IdViaje, @NroPiso, @NroCabina, convert(datetime2(3),@Fecha_Salida), convert(datetime2(3), @Fecha_Actual))
 
 			UPDATE LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
 			SET Estado = 'Ocupado'
-			WHERE IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND NroPiso = @NroPiso AND NroCabina = @NroCabina AND Fecha_Salida = @Fecha_Salida
+			WHERE IdCrucero = @IdCrucero AND TipoServicio = @TipoServicio AND NroPiso = @NroPiso AND NroCabina = @NroCabina AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date)
 		END
 END
 GO
+
 
 
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.IngresarCliente(@Nombre nvarchar(255), @Apellido nvarchar(255), @DNI decimal(18,0), @Direccion nvarchar(255), @Telefono int, @Mail nvarchar(255), @FechaNacimiento datetime2(3))
@@ -1151,8 +1165,19 @@ CREATE FUNCTION LOS_QUE_VAN_A_APROBAR.ListarViajes(@Fecha_Salida datetime2(3), @
 RETURNS TABLE
 AS
 RETURN
-	SELECT v.IdViaje, v.IdRecorrido from LOS_QUE_VAN_A_APROBAR.Viaje v
-	WHERE Fecha_Salida = @Fecha_Salida 
+	SELECT v.IdViaje, v.IdRecorrido, v.IdCrucero,
+			(select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'suite' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad suites disponibles',
+			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Cabina Balcón' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad Cabina Balcon disponibles',
+			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Cabina estandar' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad Cabina estandar disponibles',
+			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Ejecutivo' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad Ejecutivo disponibles',
+			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Cabina Exterior' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad Cabina exterior disponibles'
+  from LOS_QUE_VAN_A_APROBAR.Viaje v
+	WHERE cast(Fecha_Salida as DATE) = cast(@Fecha_Salida as DATE) 
 	AND @Puerto_Salida IN (select Puerto_Salida from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo r
 							JOIN LOS_QUE_VAN_A_APROBAR.Tramo t ON (r.CodigoTramo = t.IdTramo)
 							where r.CodigoRecorrido =  v.IdRecorrido)
@@ -1161,6 +1186,26 @@ RETURN
 							where r.CodigoRecorrido = V.IdRecorrido)
 GO
 
+
+
+create function LOS_QUE_VAN_A_APROBAR.InformacionReserva(@IdCliente int, @IdViaje int)
+returns table as
+
+return
+select r.IdReserva,v.IdViaje, v.IdCrucero, r.NroCabina, r.NroPiso ,v.Fecha_Salida, v.Fecha_Llegada, v.CodigoRecorrido from LOS_QUE_VAN_A_APROBAR.Reserva r
+join LOS_QUE_VAN_A_APROBAR.Viaje v on (v.IdViaje = r.IdViaje)
+where IdCliente = @IdCliente and r.IdViaje = @IdViaje
+GO
+
+
+
+create function LOS_QUE_VAN_A_APROBAR.InformacionPasaje(@IdCliente int, @IdViaje int)
+returns table as
+return
+select p.IdPasaje,v.IdViaje, v.IdCrucero, p.NroCabina, p.NroPiso, v.Fecha_Salida, v.Fecha_Llegada, v.CodigoRecorrido, p.Fecha_Pago from LOS_QUE_VAN_A_APROBAR.Pasaje p
+join LOS_QUE_VAN_A_APROBAR.Viaje v on (v.IdViaje = p.IdViaje)
+where p.IdCliente = @IdCliente and p.IdViaje = @IdViaje
+GO
 
 
 

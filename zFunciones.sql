@@ -54,14 +54,24 @@ GO
 ---------------------------------- COMPRA Y RESERVA ----------------------------------------------
 
 
-
-
+drop function LOS_QUE_VAN_A_APROBAR.ListarViajes
 CREATE FUNCTION LOS_QUE_VAN_A_APROBAR.ListarViajes(@Fecha_Salida datetime2(3), @Puerto_Salida nvarchar(255), @Puerto_Llegada nvarchar(255))
 RETURNS TABLE
 AS
 RETURN
-	SELECT v.IdViaje, v.IdRecorrido from LOS_QUE_VAN_A_APROBAR.Viaje v
-	WHERE Fecha_Salida = @Fecha_Salida 
+	SELECT v.IdViaje, v.IdRecorrido, v.IdCrucero,
+			(select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'suite' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad suites disponibles',
+			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Cabina Balcón' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad Cabina Balcon disponibles',
+			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Cabina estandar' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad Cabina estandar disponibles',
+			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Ejecutivo' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad Ejecutivo disponibles',
+			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Cabina Exterior' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad Cabina exterior disponibles'
+  from LOS_QUE_VAN_A_APROBAR.Viaje v
+	WHERE cast(Fecha_Salida as DATE) = cast(@Fecha_Salida as DATE) 
 	AND @Puerto_Salida IN (select Puerto_Salida from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo r
 							JOIN LOS_QUE_VAN_A_APROBAR.Tramo t ON (r.CodigoTramo = t.IdTramo)
 							where r.CodigoRecorrido =  v.IdRecorrido)
@@ -72,7 +82,26 @@ GO
 
 
 
+drop function LOS_QUE_VAN_A_APROBAR.InformacionReserva
+create function LOS_QUE_VAN_A_APROBAR.InformacionReserva(@IdCliente int, @IdViaje int)
+returns table as
 
+return
+select r.IdReserva,v.IdViaje, v.IdCrucero, r.NroCabina, r.NroPiso ,v.Fecha_Salida, v.Fecha_Llegada, v.CodigoRecorrido from LOS_QUE_VAN_A_APROBAR.Reserva r
+join LOS_QUE_VAN_A_APROBAR.Viaje v on (v.IdViaje = r.IdViaje)
+where IdCliente = @IdCliente and r.IdViaje = @IdViaje
+GO
+
+
+
+drop function LOS_QUE_VAN_A_APROBAR.InformacionPasaje
+create function LOS_QUE_VAN_A_APROBAR.InformacionPasaje(@IdCliente int, @IdViaje int)
+returns table as
+return
+select p.IdPasaje,v.IdViaje, v.IdCrucero, p.NroCabina, p.NroPiso, v.Fecha_Salida, v.Fecha_Llegada, v.CodigoRecorrido, p.Fecha_Pago from LOS_QUE_VAN_A_APROBAR.Pasaje p
+join LOS_QUE_VAN_A_APROBAR.Viaje v on (v.IdViaje = p.IdViaje)
+where p.IdCliente = @IdCliente and p.IdViaje = @IdViaje
+GO
 
 
 
