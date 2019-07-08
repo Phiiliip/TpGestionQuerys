@@ -17,6 +17,8 @@ order by CantidadDePasajesComprados DESC
 
 
 
+
+
 ----LISTADO CANTIDAD DIAS FUERA DE SERVICIO-----
 
 select TOP 5 c1.IdCrucero, m1.Descripcion as Marca, m2.Descripcion as Modelo, sum(LOS_QUE_VAN_A_APROBAR.diasFuera(2019,2,f1.FechaBaja, f1.FechaReinicio)) as CantidadDiasFueraDeServicio
