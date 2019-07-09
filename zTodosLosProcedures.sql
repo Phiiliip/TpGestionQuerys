@@ -576,6 +576,8 @@ END
 
 
 GO
+
+drop procedure LOS_QUE_VAN_A_APROBAR.ChequearReservas
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ChequearReservas
 AS
 BEGIN
@@ -596,7 +598,7 @@ SET @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 DECLARE cur CURSOR FOR
  SELECT IdReserva, IdCliente, IdViaje, NroPiso, NroCabina, Fecha_Salida, Fecha_Reserva
  FROM LOS_QUE_VAN_A_APROBAR.Reserva
- WHERE convert(datetime2(3),Fecha_Salida) > convert(datetime2(3),@Fecha_Actual) AND Estado = 'Disponible'
+ WHERE Estado = 'Disponible'
  
 OPEN cur
 
@@ -610,8 +612,7 @@ IF (DATEDIFF(day, convert(datetime2(3),@Fecha_Reserva), convert(datetime2(3),@Fe
 
 	update LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
 	SET Estado = 'Disponible'
-	WHERE IdCrucero = @IdCrucero AND NroPiso = @NroPiso AND NroCabina = @NroCabina AND Fecha_Salida = @Fecha_Salida
-	
+	WHERE IdCrucero = @IdCrucero AND NroPiso = @NroPiso AND NroCabina = @NroCabina AND CAST(Fecha_Salida as date)= cast(@Fecha_Salida as date)
 	update LOS_QUE_VAN_A_APROBAR.Reserva
 		set Estado = 'Expirada'
 		WHERE IdReserva = @IdReserva

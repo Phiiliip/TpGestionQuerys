@@ -35,6 +35,7 @@ GO
 
 
 
+
 --- Id de rol dado un usuario
 
 create function LOS_QUE_VAN_A_APROBAR.IdDeRol(@Username NVARCHAR(100), @Password NVARCHAR(255))
@@ -53,6 +54,7 @@ select * from LOS_QUE_VAN_A_APROBAR.Viaje order by Fecha_Llegada DESC
 
 ---------------------------------- COMPRA Y RESERVA ----------------------------------------------
 
+drop function LOS_QUE_VAN_A_APROBAR.ListarViajes
 CREATE FUNCTION LOS_QUE_VAN_A_APROBAR.ListarViajes(@Fecha_Salida datetime2(3), @Puerto_Salida nvarchar(255), @Puerto_Llegada nvarchar(255))
 RETURNS TABLE
 AS
@@ -69,7 +71,7 @@ RETURN
 			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
 			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Cabina Exterior' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad Cabina exterior disponibles'
     from LOS_QUE_VAN_A_APROBAR.Viaje v
-	WHERE cast(Fecha_Salida as DATE) = cast(@Fecha_Salida as DATE) 
+	WHERE cast(Fecha_Salida as DATE) = cast(@Fecha_Salida as DATE) AND CAST(Fecha_Salida as date) > CAST((select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha) as date)
 	AND @Puerto_Salida IN (select Puerto_Salida from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo r
 							JOIN LOS_QUE_VAN_A_APROBAR.Tramo t ON (r.CodigoTramo = t.IdTramo)
 							where r.CodigoRecorrido =  v.IdRecorrido)
@@ -99,9 +101,35 @@ join LOS_QUE_VAN_A_APROBAR.Viaje v on (v.IdViaje = p.IdViaje)
 where p.IdCliente = @IdCliente and p.IdViaje = @IdViaje
 GO
 
+create function LOS_QUE_VAN_A_APROBAR.ValidarReserva(@IdReserva int)
+returns int as
+begin
+declare @Resultado binary
+
+if exists (select 1 from LOS_QUE_VAN_A_APROBAR.Reserva where IdReserva = @IdReserva and Estado = 'Disponible')
+set @Resultado = 1
+else
+set @Resultado = 0
+
+return @Resultado
+end
+GO
 
 
+create function LOS_QUE_VAN_A_APROBAR.precioReserva(@IdReserva int)
+returns decimal(18,2) as
+begin
 
+declare @Precio decimal(18,2)
+
+set @Precio = (select PrecioTotal from LOS_QUE_VAN_A_APROBAR.Reserva r join LOS_QUE_VAN_A_APROBAR.Viaje v ON (r.IdViaje = v.IdViaje)
+join LOS_QUE_VAN_A_APROBAR.Recorrido re ON (re.IdRecorrido = v.IdRecorrido)
+where r.IdReserva = @IdReserva
+)
+
+return @Precio
+END
+GO
 
 -------------------------------------------- VIAJE --------------------------------------------
 

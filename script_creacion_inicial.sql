@@ -868,6 +868,7 @@ IF EXISTS (SELECT 1 FROM LOS_QUE_VAN_A_APROBAR.Reserva WHERE IdReserva = @IdRese
 END
 
 GO
+
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ChequearReservas
 AS
 BEGIN
@@ -888,7 +889,7 @@ SET @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 DECLARE cur CURSOR FOR
  SELECT IdReserva, IdCliente, IdViaje, NroPiso, NroCabina, Fecha_Salida, Fecha_Reserva
  FROM LOS_QUE_VAN_A_APROBAR.Reserva
- WHERE convert(datetime2(3),Fecha_Salida) > convert(datetime2(3),@Fecha_Actual) AND Estado = 'Disponible'
+ WHERE Estado = 'Disponible'
  
 OPEN cur
 
@@ -902,8 +903,7 @@ IF (DATEDIFF(day, convert(datetime2(3),@Fecha_Reserva), convert(datetime2(3),@Fe
 
 	update LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
 	SET Estado = 'Disponible'
-	WHERE IdCrucero = @IdCrucero AND NroPiso = @NroPiso AND NroCabina = @NroCabina AND Fecha_Salida = @Fecha_Salida
-	
+	WHERE IdCrucero = @IdCrucero AND NroPiso = @NroPiso AND NroCabina = @NroCabina AND CAST(Fecha_Salida as date)= cast(@Fecha_Salida as date)
 	update LOS_QUE_VAN_A_APROBAR.Reserva
 		set Estado = 'Expirada'
 		WHERE IdReserva = @IdReserva
@@ -1169,7 +1169,7 @@ CREATE FUNCTION LOS_QUE_VAN_A_APROBAR.ListarViajes(@Fecha_Salida datetime2(3), @
 RETURNS TABLE
 AS
 RETURN
-	SELECT v.IdViaje, v.IdRecorrido, v.IdCrucero,
+	SELECT v.IdViaje as 'Numero De Viaje', v.IdCrucero as 'Identificador Crucero', v.Fecha_Salida as 'Fecha de salida', v.Fecha_Llegada as 'Fecha de llegada',
 			(select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
 			 where IdCrucero = v.IdCrucero AND TipoServicio = 'suite' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad suites disponibles',
 			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
@@ -1180,8 +1180,8 @@ RETURN
 			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Ejecutivo' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad Ejecutivo disponibles',
 			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
 			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Cabina Exterior' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad Cabina exterior disponibles'
-  from LOS_QUE_VAN_A_APROBAR.Viaje v
-	WHERE cast(Fecha_Salida as DATE) = cast(@Fecha_Salida as DATE) 
+    from LOS_QUE_VAN_A_APROBAR.Viaje v
+	WHERE cast(Fecha_Salida as DATE) = cast(@Fecha_Salida as DATE) AND CAST(Fecha_Salida as date) > CAST((select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha) as date)
 	AND @Puerto_Salida IN (select Puerto_Salida from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo r
 							JOIN LOS_QUE_VAN_A_APROBAR.Tramo t ON (r.CodigoTramo = t.IdTramo)
 							where r.CodigoRecorrido =  v.IdRecorrido)
@@ -1211,7 +1211,35 @@ join LOS_QUE_VAN_A_APROBAR.Viaje v on (v.IdViaje = p.IdViaje)
 where p.IdCliente = @IdCliente and p.IdViaje = @IdViaje
 GO
 
+create function LOS_QUE_VAN_A_APROBAR.ValidarReserva(@IdReserva int)
+returns int as
+begin
+declare @Resultado binary
 
+if exists (select 1 from LOS_QUE_VAN_A_APROBAR.Reserva where IdReserva = @IdReserva and Estado = 'Disponible')
+set @Resultado = 1
+else
+set @Resultado = 0
+
+return @Resultado
+end
+GO
+
+
+create function LOS_QUE_VAN_A_APROBAR.precioReserva(@IdReserva int)
+returns decimal(18,2) as
+begin
+
+declare @Precio decimal(18,2)
+
+set @Precio = (select PrecioTotal from LOS_QUE_VAN_A_APROBAR.Reserva r join LOS_QUE_VAN_A_APROBAR.Viaje v ON (r.IdViaje = v.IdViaje)
+join LOS_QUE_VAN_A_APROBAR.Recorrido re ON (re.IdRecorrido = v.IdRecorrido)
+where r.IdReserva = @IdReserva
+)
+
+return @Precio
+END
+GO
 
 
 
