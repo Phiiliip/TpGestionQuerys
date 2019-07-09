@@ -274,7 +274,7 @@ IF NOT EXISTS (SELECT R.IdRecorrido
 FROM LOS_QUE_VAN_A_APROBAR.Pasaje p
  JOIN LOS_QUE_VAN_A_APROBAR.Viaje v ON (v.IdViaje = p.IdViaje)
  JOIN LOS_QUE_VAN_A_APROBAR.Recorrido r ON (v.IdRecorrido = r.IdRecorrido)
-WHERE p.Fecha_Salida > GETDATE() AND r.IdRecorrido = @IdRecorrido
+WHERE p.Fecha_Salida > (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha) AND r.IdRecorrido = @IdRecorrido
 )
 
 BEGIN

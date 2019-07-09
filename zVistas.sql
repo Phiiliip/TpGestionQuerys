@@ -1,5 +1,10 @@
 -- Listar todos los cruceros
 
+select IdCrucero, Marca, Modelo, CantidadCabinas from LOS_QUE_VAN_A_APROBAR.ListarCrucerosHabilitados
+join LOS_QUE_VAN_A_APROBAR.Viaje v on v.IdCrucero = IdCrucero
+where v.Fecha_Llegada > (select TOP(1) * from LOS_QUE_VAN_A_APROBAR.TablaFecha) and v.Fecha_Salida < (select TOP(1) * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+
+
 GO
 create view LOS_QUE_VAN_A_APROBAR.ListarCruceros
 as
@@ -15,7 +20,7 @@ select C.IdCrucero, M.Descripcion as Marca, Mo.Descripcion as Modelo, C.Cantidad
 from LOS_QUE_VAN_A_APROBAR.Crucero as c
 join LOS_QUE_VAN_A_APROBAR.Marca as M on c.IdMarca = M.IdMarca
 join LOS_QUE_VAN_A_APROBAR.Modelo as Mo on c.IdModelo = Mo.IdModelo
-where c.FechaAlta < SYSDATETIME()
+where c.FechaAlta < (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 
 GO
 create view LOS_QUE_VAN_A_APROBAR.ListarCrucerosInhabilitados

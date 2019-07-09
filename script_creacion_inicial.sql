@@ -572,7 +572,7 @@ IF NOT EXISTS (SELECT R.IdRecorrido
 FROM LOS_QUE_VAN_A_APROBAR.Pasaje p
  JOIN LOS_QUE_VAN_A_APROBAR.Viaje v ON (v.IdViaje = p.IdViaje)
  JOIN LOS_QUE_VAN_A_APROBAR.Recorrido r ON (v.IdRecorrido = r.IdRecorrido)
-WHERE p.Fecha_Salida > GETDATE() AND r.IdRecorrido = @IdRecorrido
+WHERE p.Fecha_Salida > (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha) AND r.IdRecorrido = @IdRecorrido
 )
 
 BEGIN
@@ -603,14 +603,13 @@ GO
 
 
 
-
 -- Creacion de un crucero
 
 create procedure LOS_QUE_VAN_A_APROBAR.AltaCrucero(@IdCrucero NVARCHAR(50), @IdMarca int, @IdModelo int, @CantidadCabinas int)
 as
 begin
 insert LOS_QUE_VAN_A_APROBAR.Crucero(IdCrucero,IdMarca,IdModelo,FechaAlta,CantidadCabinas)
-values(@IdCrucero,@IdMarca,@IdModelo,SYSDATETIME(), @CantidadCabinas)
+values(@IdCrucero,@IdMarca,@IdModelo,(select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha), @CantidadCabinas)
 end
 GO
 -- Modificar Marca y modelo de crucero
@@ -633,7 +632,7 @@ set FechaAlta = NULL
 where IdCrucero = @IdCrucero
 
 insert LOS_QUE_VAN_A_APROBAR.FueraDeServicio(IdCrucero,FechaBaja,MotivoBaja)
-values(@IdCrucero, SYSDATETIME(), 'Vida util finalizada')
+values(@IdCrucero, (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha), 'Vida util finalizada')
 
 end
 GO
@@ -647,7 +646,7 @@ set FechaAlta = @FechaDeAlta
 where IdCrucero = @IdCrucero
 
 insert LOS_QUE_VAN_A_APROBAR.FueraDeServicio(IdCrucero, FechaBaja, MotivoBaja, FechaReinicio)
-values(@IdCrucero,SYSDATETIME(), 'Fuera de servicio', @FechaDeAlta)
+values(@IdCrucero,(select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha), 'Fuera de servicio', @FechaDeAlta)
 
 end
 GO
@@ -1289,7 +1288,7 @@ select C.IdCrucero, M.Descripcion as Marca, Mo.Descripcion as Modelo, C.Cantidad
 from LOS_QUE_VAN_A_APROBAR.Crucero as c
 join LOS_QUE_VAN_A_APROBAR.Marca as M on c.IdMarca = M.IdMarca
 join LOS_QUE_VAN_A_APROBAR.Modelo as Mo on c.IdModelo = Mo.IdModelo
-where c.FechaAlta < SYSDATETIME()
+where c.FechaAlta < (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 
 GO
 create view LOS_QUE_VAN_A_APROBAR.ListarCrucerosInhabilitados
