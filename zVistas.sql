@@ -49,7 +49,7 @@ join LOS_QUE_VAN_A_APROBAR.Viaje as v on v.IdCrucero = c.IdCrucero
 where (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha) between v.Fecha_Salida and v.Fecha_Llegada 
 GO
 
-select * from LOS_QUE_VAN_A_APROBAR.Viaje order by Fecha_Llegada DESC
+
 -- Recorridos
 
 create view LOS_QUE_VAN_A_APROBAR.ListarRecorridos
@@ -74,6 +74,28 @@ join LOS_QUE_VAN_A_APROBAR.Funcionalidad f on FPR.IdFuncionalidad = f.IdFunciona
 GO
 
 
+-- Viajes
 
+create view LOS_QUE_VAN_A_APROBAR.ListarTodosLosViajes
+as
+select v.IdViaje as NumeroDeViaje, v.IdCrucero as IdentificadorCrucero, v.Fecha_Salida, v.Fecha_Llegada, (select LOS_QUE_VAN_A_APROBAR.PuertosExtremos(v.IdRecorrido)) as PuertoExtremos 
+from LOS_QUE_VAN_A_APROBAR.Viaje as v
+GO
 
+create view LOS_QUE_VAN_A_APROBAR.ListarViajesConInfo
+as
+SELECT v.IdViaje as 'Numero De Viaje', v.IdCrucero as 'Identificador Crucero', v.Fecha_Salida as 'Fecha de salida', v.Fecha_Llegada as 'Fecha de llegada',
+			(select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Suite' AND cast(Fecha_Salida as date) = cast(v.Fecha_Salida as date) AND Estado = 'Disponible') as 'Cantidad suites disponibles',
+			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Cabina Balcón' AND cast(Fecha_Salida as date) = cast(v.Fecha_Salida as date) AND Estado = 'Disponible')as 'Cantidad Cabina Balcon disponibles',
+			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Cabina estandar' AND cast(Fecha_Salida as date) = cast(v.Fecha_Salida as date) AND Estado = 'Disponible')as 'Cantidad Cabina estandar disponibles',
+			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Ejecutivo' AND cast(Fecha_Salida as date) = cast(v.Fecha_Salida as date) AND Estado = 'Disponible')as 'Cantidad Ejecutivo disponibles',
+			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Cabina Exterior' AND cast(Fecha_Salida as date) = cast(v.Fecha_Salida as date) AND Estado = 'Disponible')as 'Cantidad Cabina exterior disponibles'
+    from LOS_QUE_VAN_A_APROBAR.Viaje v
+	WHERE cast(Fecha_Salida as DATE) > cast((select top(1) * from LOS_QUE_VAN_A_APROBAR.TablaFecha) as DATE) 
+GO
 

@@ -233,6 +233,7 @@ INSERT INTO LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido, Descripcion, Preci
 VALUES (@CodigoRecorrido, @Descripcion, @Precio)
 END
 GO
+
 --Crear tramo de recorrido
 
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.InsertarTramoDeRecorrido(@CodigoRecorrido int, @PuertoSalida NVARCHAR(255), @PuertoLlegada NVARCHAR(255), @Precio decimal(18,2))
@@ -249,9 +250,10 @@ INSERT INTO LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido, CodigoTramo
 values(@CodigoRecorrido, @CodigoTramo, @Precio)
 END
 GO
+
+
 --modificar tramo de recorrido
 
-select * from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo
 
 Create PROCEDURE LOS_QUE_VAN_A_APROBAR.modificarTramoDeRecorrido(@IdRecorrido int,@TramoViejo int, @TramoNuevo int)
 AS
@@ -336,7 +338,7 @@ set FechaAlta = NULL
 where IdCrucero = @IdCrucero
 
 insert LOS_QUE_VAN_A_APROBAR.FueraDeServicio(IdCrucero,FechaBaja,MotivoBaja)
-values(@IdCrucero, SYSDATETIME(), 'Vida util finalizada')
+values(@IdCrucero, (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha), 'Vida util finalizada')
 
 end
 GO
@@ -350,18 +352,10 @@ set FechaAlta = @FechaDeAlta
 where IdCrucero = @IdCrucero
 
 insert LOS_QUE_VAN_A_APROBAR.FueraDeServicio(IdCrucero, FechaBaja, MotivoBaja, FechaReinicio)
-values(@IdCrucero,SYSDATETIME(), 'Fuera de servicio', @FechaDeAlta)
+values(@IdCrucero,(select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha), 'Fuera de servicio', @FechaDeAlta)
 
 end
 GO
-
-declare @Fecha DATETIME2(3)
-set @Fecha = (select TOP(1) * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
-exec LOS_QUE_VAN_A_APROBAR.GenerarCabinasPorCrucero 'OPQXIP-19781', @Fecha
-
-select * from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero order by Fecha_Salida DESC
-
-select CantidadCabinas from LOS_QUE_VAN_A_APROBAR.Crucero where IdCrucero = 'OPQXIP-19781'
 
 
 --- Generar las cabinas para un crucero
@@ -579,6 +573,8 @@ IF EXISTS (SELECT 1 FROM LOS_QUE_VAN_A_APROBAR.Reserva WHERE IdReserva = @IdRese
 	END
 END
 
+
+
 GO
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ChequearReservas
 AS
@@ -747,6 +743,7 @@ begin
 
 insert into LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido,Descripcion,PrecioTotal)
 values(@Incremental,'Prueba',@Precio)
+
 -- Roles
 
 set @IdRecorrido = (select TOP(1) IdRecorrido from LOS_QUE_VAN_A_APROBAR.Recorrido order by IdRecorrido DESC)
