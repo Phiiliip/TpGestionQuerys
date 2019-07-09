@@ -30,7 +30,7 @@ create table [LOS_QUE_VAN_A_APROBAR].Crucero(
 IdCrucero nvarchar(50) PRIMARY KEY,
 IdMarca int REFERENCES LOS_QUE_VAN_A_APROBAR.MARCA(IdMarca),
 IdModelo int REFERENCES LOS_QUE_VAN_A_APROBAR.MODELO(IdModelo),
-FechaAlta DATETIME2(3) DEFAULT(SYSDATETIME()),
+FechaAlta DATETIME2(3),
 CantidadCabinas int,
 );
 
@@ -231,7 +231,7 @@ from gd_esquema.Maestra
 
 -- Crucero
 
-insert LOS_QUE_VAN_A_APROBAR.Crucero(IdCrucero,IdMarca,IdModelo,CantidadCabinas) select DISTINCT CRUCERO_IDENTIFICADOR, m.IdMarca, mo.IdModelo, (MAX(CABINA_NRO) * (MAX(CABINA_PISO)+1)) as TotalCabinas
+insert LOS_QUE_VAN_A_APROBAR.Crucero(IdCrucero,IdMarca,IdModelo,FechaAlta,CantidadCabinas) select DISTINCT CRUCERO_IDENTIFICADOR, m.IdMarca, mo.IdModelo, (select * from LOS_QUE_VAN_A_APROBAR.TablaFecha fe),(MAX(CABINA_NRO) * (MAX(CABINA_PISO)+1)) as TotalCabinas
 from gd_esquema.Maestra
 join LOS_QUE_VAN_A_APROBAR.Modelo as mo on (CRUCERO_MODELO = mo.Descripcion)
 join LOS_QUE_VAN_A_APROBAR.Marca as m on (CRU_FABRICANTE = m.Descripcion)
@@ -1376,8 +1376,7 @@ GO
 ---------------------- TRIGGERS --------------------------------
 
 
------- ----------------- Viaje ------------------------
-
+------ ----------------- Viaje ----------------------
 
 create trigger LOS_QUE_VAN_A_APROBAR.CrearCabinasPorCrucero on LOS_QUE_VAN_A_APROBAR.Viaje after insert
 as
