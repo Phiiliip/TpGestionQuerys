@@ -92,7 +92,9 @@ create table [LOS_QUE_VAN_A_APROBAR].RecorridoPorTramo(
 CodigoRecorrido int REFERENCES LOS_QUE_VAN_A_APROBAR.Recorrido(IdRecorrido),
 CodigoTramo int REFERENCES LOS_QUE_VAN_A_APROBAR.Tramo(IdTramo),
 PrecioTramo decimal(18,2),
+orden int identity(1,1) UNIQUE
 );
+
 
 -- Viaje
 
@@ -551,15 +553,22 @@ END
 GO
 --modificar tramo de recorrido
 
-Create PROCEDURE LOS_QUE_VAN_A_APROBAR.modificarTramoDeRecorrido(@IdRecorrido int,@TramoViejo int, @TramoNuevo int)
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ModificarTramoDeRecorrido(@CodigoRecorrido int, @IdTramo int, @PuertoSalida NVARCHAR(255), @PuertoLlegada NVARCHAR(255))
 AS
 BEGIN
+declare @CodigoTramo int
+if NOT EXISTS(select 1 from LOS_QUE_VAN_A_APROBAR.Tramo t  where t.Puerto_Llegada = @PuertoLlegada and t.Puerto_Salida = @PuertoSalida)
+begin
+	insert into LOS_QUE_VAN_A_APROBAR.Tramo(Puerto_Salida, Puerto_Llegada)
+	values(@PuertoSalida, @PuertoLlegada)
+end
+set @CodigoTramo = (select top(1) IdTramo from LOS_QUE_VAN_A_APROBAR.Tramo where Puerto_Llegada = @PuertoLlegada and Puerto_Salida = @PuertoSalida)
 
 update LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo
-set CodigoTramo = @TramoNuevo
-WHERE CodigoRecorrido = @IdRecorrido AND CodigoTramo = @TramoViejo
+set CodigoTramo = @CodigoTramo
+where CodigoTramo = @IdTramo AND CodigoRecorrido = @CodigoRecorrido
 
-end
+END
 GO
 
 
