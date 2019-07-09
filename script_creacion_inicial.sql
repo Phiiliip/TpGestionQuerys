@@ -305,9 +305,14 @@ GO
 
 -- Administradores de prueba
 
+exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'FelipeOtero', 'w23e'
+GO
+exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'EmanuelSedlar', 'w23e'
+GO
+exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'NicolasMarchesotti', 'w23e'
+GO
 exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'admin', 'w23e'
 GO
-
 
 
 
@@ -1099,7 +1104,7 @@ begin
 	set @resultado = DATEDIFF(day, @fechabaja, @fechaalta)
 	return @resultado
 end
-
+GO
 
 
 
