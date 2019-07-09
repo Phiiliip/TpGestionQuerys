@@ -1284,20 +1284,42 @@ GO
 
 create view LOS_QUE_VAN_A_APROBAR.ListarCrucerosHabilitados
 as
-select C.IdCrucero, M.Descripcion as Marca, Mo.Descripcion as Modelo, C.CantidadCabinas
+select DISTINCT C.IdCrucero, M.Descripcion as Marca, Mo.Descripcion as Modelo, C.CantidadCabinas
 from LOS_QUE_VAN_A_APROBAR.Crucero as c
 join LOS_QUE_VAN_A_APROBAR.Marca as M on c.IdMarca = M.IdMarca
 join LOS_QUE_VAN_A_APROBAR.Modelo as Mo on c.IdModelo = Mo.IdModelo
 where c.FechaAlta < (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 
 GO
+
 create view LOS_QUE_VAN_A_APROBAR.ListarCrucerosInhabilitados
 as
-select C.IdCrucero, M.Descripcion as Marca, Mo.Descripcion as Modelo, C.CantidadCabinas
+select DISTINCT C.IdCrucero, M.Descripcion as Marca, Mo.Descripcion as Modelo, C.CantidadCabinas
 from LOS_QUE_VAN_A_APROBAR.Crucero as c
 join LOS_QUE_VAN_A_APROBAR.Marca as M on c.IdMarca = M.IdMarca
 join LOS_QUE_VAN_A_APROBAR.Modelo as Mo on c.IdModelo = Mo.IdModelo
-where c.FechaAlta IS NULL
+where c.FechaAlta > (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha) or c.FechaAlta is null
+GO
+
+create view LOS_QUE_VAN_A_APROBAR.ListarCrucerosSinViaje
+as
+select DISTINCT C.IdCrucero, M.Descripcion as Marca, Mo.Descripcion as Modelo, C.CantidadCabinas
+from LOS_QUE_VAN_A_APROBAR.Crucero as c
+join LOS_QUE_VAN_A_APROBAR.Marca as M on c.IdMarca = M.IdMarca
+join LOS_QUE_VAN_A_APROBAR.Modelo as Mo on c.IdModelo = Mo.IdModelo
+join LOS_QUE_VAN_A_APROBAR.Viaje as v on v.IdCrucero = c.IdCrucero
+where (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha) NOT between v.Fecha_Salida and v.Fecha_Llegada
+GO
+
+
+create view LOS_QUE_VAN_A_APROBAR.ListarCrucerosEnViaje
+as
+select DISTINCT C.IdCrucero, M.Descripcion as Marca, Mo.Descripcion as Modelo, C.CantidadCabinas
+from LOS_QUE_VAN_A_APROBAR.Crucero as c
+join LOS_QUE_VAN_A_APROBAR.Marca as M on c.IdMarca = M.IdMarca
+join LOS_QUE_VAN_A_APROBAR.Modelo as Mo on c.IdModelo = Mo.IdModelo
+join LOS_QUE_VAN_A_APROBAR.Viaje as v on v.IdCrucero = c.IdCrucero
+where (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha) between v.Fecha_Salida and v.Fecha_Llegada 
 GO
 
 
