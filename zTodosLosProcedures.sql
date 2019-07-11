@@ -722,47 +722,55 @@ end
 GO
 
 
-create procedure LOS_QUE_VAN_A_APROBAR.TramosARecorrido
+--------- Recorridos de un solo tramo ya existente
+
+create procedure LOS_QUE_VAN_A_APROBAR.CrearRecorridos
 as
 begin
-declare @IdRecorrido int
-declare @CodigoTramo int
+
+declare @IdTramo int
+declare @PuertoSalida NVARCHAR(255)
+declare @PuertoLlegada NVARCHAR(255)
 declare @Precio decimal(18,2)
-declare @Incremental decimal(18,0)
-declare Cursorsito CURSOR FOR
-select IdTramo, Precio from LOS_QUE_VAN_A_APROBAR.Tramo
+declare @RecorridoCodigo decimal(18,0)
+declare @IdRecorrido int
 
-open Cursorsito
+declare CursorTramos Cursor for
+select DISTINCT PUERTO_DESDE, PUERTO_HASTA, RECORRIDO_PRECIO_BASE, RECORRIDO_CODIGO
+from gd_esquema.Maestra 
 
-set @Incremental = 250000
+open CursorTramos
 
-fetch next from Cursorsito into @CodigoTramo, @Precio
+fetch next from CursorTramos
+into @PuertoSalida, @PuertoLlegada, @Precio, @RecorridoCodigo
 
-while @@FETCH_STATUS = 0
-
+while (@@FETCH_STATUS = 0)
 begin
 
-insert into LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido,Descripcion,PrecioTotal)
-values(@Incremental,'Prueba',@Precio)
+insert into LOS_QUE_VAN_A_APROBAR.Tramo(Puerto_Salida, Puerto_Llegada, Precio)
+values (@PuertoSalida, @PuertoLlegada, @Precio)
 
--- Roles
+set @IdTramo = (select top(1) IdTramo from LOS_QUE_VAN_A_APROBAR.Tramo)
 
-set @IdRecorrido = (select TOP(1) IdRecorrido from LOS_QUE_VAN_A_APROBAR.Recorrido order by IdRecorrido DESC)
+insert into LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido, PrecioTotal)
+values(@RecorridoCodigo, @Precio)
 
-insert into LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido, CodigoTramo, PrecioTramo)
-values(@IdRecorrido, @CodigoTramo, @Precio)
+set @IdRecorrido = (select top(1) IdRecorrido from LOS_QUE_VAN_A_APROBAR.Recorrido)
 
-set @Incremental = @Incremental +1
+insert into LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido,CodigoTramo,PrecioTramo)
+values(@IdRecorrido, @IdTramo, @Precio)
 
-fetch next from Cursorsito into @CodigoTramo, @Precio
+fetch next from CursorTramos
+into @PuertoSalida, @PuertoLlegada, @Precio, @RecorridoCodigo
 
 end
 
-close Cursorsito
-deallocate Cursorsito
+close CursorTramos
+deallocate CursorTramos
 
-end 
-GO
+end
+go
+
 
 
 

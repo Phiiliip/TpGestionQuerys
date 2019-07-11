@@ -219,14 +219,6 @@ insert LOS_QUE_VAN_A_APROBAR.Puerto(Nombre) select DISTINCT PUERTO_DESDE
 from gd_esquema.Maestra
 order by PUERTO_DESDE
 
--- Tramo
-insert LOS_QUE_VAN_A_APROBAR.Tramo(Puerto_Salida,Puerto_Llegada,Precio) select DISTINCT PUERTO_DESDE, PUERTO_HASTA, RECORRIDO_PRECIO_BASE
-from gd_esquema.Maestra 
-
--- Recorrido
-insert LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido, PrecioTotal) select DISTINCT RECORRIDO_CODIGO, RECORRIDO_PRECIO_BASE
-from gd_esquema.Maestra
-
 -- Tipo Servicio
 insert LOS_QUE_VAN_A_APROBAR.Servicio(TipoServicio,Porcentaje) select DISTINCT CABINA_TIPO, CABINA_TIPO_PORC_RECARGO
 from gd_esquema.Maestra
@@ -1025,49 +1017,56 @@ GO
 
 ------- CREAR TODOS LOS RECORRIDOS POR TRAMO DE UN SOLO TRAMO YA GUARDADOS EN LA BD
 
-create procedure LOS_QUE_VAN_A_APROBAR.TramosARecorrido
+create procedure LOS_QUE_VAN_A_APROBAR.CrearRecorridos
 as
 begin
-declare @IdRecorrido int
-declare @CodigoTramo int
+
+declare @IdTramo int
+declare @PuertoSalida NVARCHAR(255)
+declare @PuertoLlegada NVARCHAR(255)
 declare @Precio decimal(18,2)
-declare @Incremental decimal(18,0)
-declare Cursorsito CURSOR FOR
-select IdTramo, Precio from LOS_QUE_VAN_A_APROBAR.Tramo
+declare @RecorridoCodigo decimal(18,0)
+declare @IdRecorrido int
 
-open Cursorsito
+declare CursorTramos Cursor for
+select DISTINCT PUERTO_DESDE, PUERTO_HASTA, RECORRIDO_PRECIO_BASE, RECORRIDO_CODIGO
+from gd_esquema.Maestra 
 
-set @Incremental = 250000
+open CursorTramos
 
-fetch next from Cursorsito into @CodigoTramo, @Precio
+fetch next from CursorTramos
+into @PuertoSalida, @PuertoLlegada, @Precio, @RecorridoCodigo
 
-while @@FETCH_STATUS = 0
-
+while (@@FETCH_STATUS = 0)
 begin
 
-insert into LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido,Descripcion,PrecioTotal)
-values(@Incremental,'Prueba',@Precio)
--- Roles
+insert into LOS_QUE_VAN_A_APROBAR.Tramo(Puerto_Salida, Puerto_Llegada, Precio)
+values (@PuertoSalida, @PuertoLlegada, @Precio)
 
-set @IdRecorrido = (select TOP(1) IdRecorrido from LOS_QUE_VAN_A_APROBAR.Recorrido order by IdRecorrido DESC)
+set @IdTramo = (select top(1) IdTramo from LOS_QUE_VAN_A_APROBAR.Tramo)
 
-insert into LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido, CodigoTramo, PrecioTramo)
-values(@IdRecorrido, @CodigoTramo, @Precio)
+insert into LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido, PrecioTotal)
+values(@RecorridoCodigo, @Precio)
 
-set @Incremental = @Incremental +1
+set @IdRecorrido = (select top(1) IdRecorrido from LOS_QUE_VAN_A_APROBAR.Recorrido)
 
-fetch next from Cursorsito into @CodigoTramo, @Precio
+insert into LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido,CodigoTramo,PrecioTramo)
+values(@IdRecorrido, @IdTramo, @Precio)
+
+fetch next from CursorTramos
+into @PuertoSalida, @PuertoLlegada, @Precio, @RecorridoCodigo
 
 end
 
-close Cursorsito
-deallocate Cursorsito
+close CursorTramos
+deallocate CursorTramos
 
-end 
+end
 GO
 
-exec LOS_QUE_VAN_A_APROBAR.TramosARecorrido
+exec LOS_QUE_VAN_A_APROBAR.CrearRecorridos
 GO
+
 
 
 
@@ -1444,3 +1443,4 @@ join Rol as r on r.IdRol = c.IdRol
 where r.Estado = 'Inhabilitado'
 end
 GO
+
