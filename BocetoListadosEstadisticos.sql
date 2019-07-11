@@ -2,28 +2,43 @@ use GD1C2019
 
 ---LISTADO RECORRIDO CON MAS PASAJES COMPRADOS
 
-SELECT TOP 5 r1.Codigo_Recorrido as CodigoRecorrido, pt1.Nombre as NombrePuertoOrigen, COUNT(IdPasaje) as CantidadDePasajesComprados
+SELECT TOP 5 r1.Codigo_Recorrido as CodigoRecorrido, r1.IdRecorrido, COUNT(IdPasaje) as CantidadDePasajesComprados, pto.Nombre as PuertoOrigen
+from LOS_QUE_VAN_A_APROBAR.Pasaje p1 join LOS_QUE_VAN_A_APROBAR.Viaje v1 on (p1.IdViaje = v1.IdViaje) 
+		join LOS_QUE_VAN_A_APROBAR.Recorrido r1 on (v1.IdRecorrido = r1.IdRecorrido)
+		join LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo rt1 on (r1.IdRecorrido = rt1.CodigoRecorrido) 
+		join LOS_QUE_VAN_A_APROBAR.Tramo t1 on (rt1.CodigoTramo = t1.IdTramo)
+		join LOS_QUE_VAN_A_APROBAR.Puerto pto on (t1.Puerto_Salida = pto.Nombre)
 
-from LOS_QUE_VAN_A_APROBAR.Pasaje p1 join LOS_QUE_VAN_A_APROBAR.Viaje v1 on (p1.IdViaje = v1.IdViaje) join LOS_QUE_VAN_A_APROBAR.Recorrido r1 on (v1.IdRecorrido = r1.IdRecorrido)
-		join LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo rt1 on (r1.IdRecorrido = rt1.CodigoRecorrido) join LOS_QUE_VAN_A_APROBAR.Tramo t1 on (rt1.CodigoTramo = t1.IdTramo) 
-		join LOS_QUE_VAN_A_APROBAR.Puerto pt1 on (t1.Puerto_Salida= pt1.Nombre)
-group by r1.Codigo_Recorrido, pt1.Nombre
+where rt1.CodigoTramo in (select MIN(CodigoTramo) from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo rpt2 
+							where rpt2.CodigoRecorrido = r1.IdRecorrido )
 
-order by CantidadDePasajesComprados DESC
+group by r1.Codigo_Recorrido, r1.IdRecorrido, pto.Nombre
+
+order by CantidadDePasajesComprados ASC
 
 
+select t1.Puerto_Salida from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo rt1 join LOS_QUE_VAN_A_APROBAR.Tramo t1 on (rt1.CodigoTramo = t1.IdTramo) where (rt1.CodigoRecorrido= r1.IdRecorrido) group by t1.Puerto_Salida
 
-SELECT TOP 5 r1.Codigo_Recorrido as CodigoRecorrido, COUNT(IdPasaje) as CantidadDePasajesComprados
+123	34
+43820864	2747
+43820908	2889
+43820867	4518
+43820905	4639
+
+SELECT TOP 5 r1.Codigo_Recorrido as CodigoRecorrido, r1.PrecioTotal as PrecioTotal, COUNT(IdPasaje) as CantidadDePasajesComprados
 
 from LOS_QUE_VAN_A_APROBAR.Pasaje p1 join LOS_QUE_VAN_A_APROBAR.Viaje v1 on (p1.IdViaje = v1.IdViaje) join LOS_QUE_VAN_A_APROBAR.Recorrido r1 on (v1.IdRecorrido = r1.IdRecorrido)
 	
-group by r1.Codigo_Recorrido
+group by r1.Codigo_Recorrido, PrecioTotal
 
-order by CantidadDePasajesComprados DESC
-
-
+order by CantidadDePasajesComprados ASC
 
 
+select * from LOS_QUE_VAN_A_APROBAR.Recorrido
+
+select * from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo
+
+select * from LOS_QUE_VAN_A_APROBAR.Tramo
 ---LISTADO RECORRIDOS CON MAS CABINAS LIBRES EN CADA VIAJE
 
 SELECT TOP 5 r1.Codigo_Recorrido as CodigoRecorrido, v1.IdViaje, (c1.CantidadCabinas - (select count(p1.IdPasaje)  from LOS_QUE_VAN_A_APROBAR.Pasaje p1 where (p1.IdViaje = v1.IdViaje))) as CantidadCabinasLibres
