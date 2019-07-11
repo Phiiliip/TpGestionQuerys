@@ -1021,12 +1021,12 @@ begin
 insert into LOS_QUE_VAN_A_APROBAR.Tramo(Puerto_Salida, Puerto_Llegada, Precio)
 values (@PuertoSalida, @PuertoLlegada, @Precio)
 
-set @IdTramo = (select top(1) IdTramo from LOS_QUE_VAN_A_APROBAR.Tramo)
+set @IdTramo = (select top(1) IdTramo from LOS_QUE_VAN_A_APROBAR.Tramo order by IdTramo DESC)
 
 insert into LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido, PrecioTotal)
 values(@RecorridoCodigo, @Precio)
 
-set @IdRecorrido = (select top(1) IdRecorrido from LOS_QUE_VAN_A_APROBAR.Recorrido)
+set @IdRecorrido = (select top(1) IdRecorrido from LOS_QUE_VAN_A_APROBAR.Recorrido order by IdRecorrido DESC)
 
 insert into LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido,CodigoTramo,PrecioTramo)
 values(@IdRecorrido, @IdTramo, @Precio)

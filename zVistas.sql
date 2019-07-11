@@ -62,8 +62,6 @@ GO
 
 
 
-
-
 -- Roles
 
 create view LOS_QUE_VAN_A_APROBAR.ListaRoles
