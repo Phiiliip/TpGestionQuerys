@@ -131,6 +131,19 @@ return @Precio
 END
 GO
 
+
+create function LOS_QUE_VAN_A_APROBAR.clienteSeleccionado(@DNI decimal(18,0), @Nombre nvarchar(255), @Apellido nvarchar(255), @Direccion nvarchar(255))
+returns int as
+begin
+
+declare @idCliente int
+
+set @idCliente= (select IdCliente from LOS_QUE_VAN_A_APROBAR.Cliente where DNI = @DNI AND Nombre = @Nombre and Apellido = @Apellido AND Direccion = @Direccion)
+
+return @idCliente
+end
+go
+
 -------------------------------------------- VIAJE --------------------------------------------
 
 CREATE FUNCTION LOS_QUE_VAN_A_APROBAR.crucerosParaViaje(@Fecha_SalidaNueva datetime2(3), @Fecha_LlegadaNueva datetime2(3))
