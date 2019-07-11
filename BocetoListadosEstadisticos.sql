@@ -1,5 +1,7 @@
 use GD1C2019
 
+---LISTADO RECORRIDO CON MAS PASAJES COMPRADOS
+
 SELECT TOP 5 r1.Codigo_Recorrido as CodigoRecorrido, pt1.Nombre as NombrePuertoOrigen, COUNT(IdPasaje) as CantidadDePasajesComprados
 
 from LOS_QUE_VAN_A_APROBAR.Pasaje p1 join LOS_QUE_VAN_A_APROBAR.Viaje v1 on (p1.IdViaje = v1.IdViaje) join LOS_QUE_VAN_A_APROBAR.Recorrido r1 on (v1.IdRecorrido = r1.IdRecorrido)
@@ -11,12 +13,25 @@ order by CantidadDePasajesComprados DESC
 
 
 
+SELECT TOP 5 r1.Codigo_Recorrido as CodigoRecorrido, COUNT(IdPasaje) as CantidadDePasajesComprados
+
+from LOS_QUE_VAN_A_APROBAR.Pasaje p1 join LOS_QUE_VAN_A_APROBAR.Viaje v1 on (p1.IdViaje = v1.IdViaje) join LOS_QUE_VAN_A_APROBAR.Recorrido r1 on (v1.IdRecorrido = r1.IdRecorrido)
+	
+group by r1.Codigo_Recorrido
+
+order by CantidadDePasajesComprados DESC
 
 
 
 
+---LISTADO RECORRIDOS CON MAS CABINAS LIBRES EN CADA VIAJE
 
+SELECT TOP 5 r1.Codigo_Recorrido as CodigoRecorrido, v1.IdViaje, (c1.CantidadCabinas - (select count(p1.IdPasaje)  from LOS_QUE_VAN_A_APROBAR.Pasaje p1 where (p1.IdViaje = v1.IdViaje))) as CantidadCabinasLibres
 
+from LOS_QUE_VAN_A_APROBAR.Recorrido r1 join LOS_QUE_VAN_A_APROBAR.Viaje v1 on (r1.IdRecorrido = v1.IdRecorrido)
+		join LOS_QUE_VAN_A_APROBAR.Crucero c1 on (v1.IdCrucero = c1.IdCrucero)
+
+order by CantidadCabinasLibres DESC
 
 
 ----LISTADO CANTIDAD DIAS FUERA DE SERVICIO-----
