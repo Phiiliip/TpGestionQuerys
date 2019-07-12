@@ -528,11 +528,11 @@ declare @PuertoS nvarchar(255)
 set @PuertoS = (select Puerto_Salida from LOS_QUE_VAN_A_APROBAR.Tramo where IdTramo = @IdTramo)
 
 if (@PuertoS != @PuertoSalida)
-
+begin
 THROW 50000, 'The record does not exist.', 1;
-
+end
 ELSE
-
+begin
 set @CodigoTramo = (select top(1) IdTramo from LOS_QUE_VAN_A_APROBAR.Tramo where Puerto_Llegada = @PuertoLlegada and Puerto_Salida = @PuertoSalida)
 
 update LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo
