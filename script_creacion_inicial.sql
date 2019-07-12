@@ -794,22 +794,26 @@ GO
 -- VIAJE
 
 -- Creacion de un viaje
-
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.GenerarViaje(@IdCrucero nvarchar(50), @IdRecorrido int, @Fecha_Salida datetime2(3), @Fecha_Llegada datetime2(3))
 AS
 BEGIN
 DECLARE @Fecha_Actual datetime2(3)
+declare @CodigoRecorrido decimal(18,0)
 
 SET @Fecha_Actual = (select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+set @CodigoRecorrido = (select Codigo_Recorrido from LOS_QUE_VAN_A_APROBAR.Recorrido where IdRecorrido = @IdRecorrido)
+
 
 if CONVERT(datetime2(3),@Fecha_Salida) > CONVERT(datetime2(3), @Fecha_Actual)
 BEGIN
-	insert into LOS_QUE_VAN_A_APROBAR.Viaje(IdCrucero, IdRecorrido, Fecha_Salida, Fecha_Llegada)
-	values(@IdCrucero, @IdRecorrido, @Fecha_Salida, @Fecha_Llegada)
+	insert into LOS_QUE_VAN_A_APROBAR.Viaje(IdCrucero, IdRecorrido, Fecha_Salida, Fecha_Llegada,CodigoRecorrido)
+	values(@IdCrucero, @IdRecorrido, @Fecha_Salida, @Fecha_Llegada,@CodigoRecorrido)
 END
 
 ELSE
-	Print 'la fecha de salida debe ser mayor a la actual' -- ver como pasar error a visual
+
+THROW 50000, 'La fecha de salida debe ser mayor a la actual', 1;
+
 END
 GO
 
@@ -1462,6 +1466,22 @@ SELECT v.IdViaje as 'Numero De Viaje', v.IdCrucero as 'Identificador Crucero', v
     from LOS_QUE_VAN_A_APROBAR.Viaje v
 	WHERE cast(Fecha_Salida as DATE) > cast((select top(1) * from LOS_QUE_VAN_A_APROBAR.TablaFecha) as DATE) 
 GO
+
+create function LOS_QUE_VAN_A_APROBAR.PrecioViaje(@IdViaje int)
+returns decimal(18,2) as
+begin
+declare @Precio decimal(18,2)
+
+set @Precio = (select SUM(t.Precio) from LOS_QUE_VAN_A_APROBAR.Viaje v join LOS_QUE_VAN_A_APROBAR.Recorrido r ON (r.IdRecorrido = v.CodigoRecorrido)
+				join LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo rpt ON (rpt.CodigoRecorrido = r.IdRecorrido)
+				JOIN LOS_QUE_VAN_A_APROBAR.Tramo t ON (t.IdTramo = rpt.CodigoTramo)
+				where v.IdViaje = @IdViaje)
+
+
+return @Precio
+
+end
+go
 
 -- Recorridos
 
