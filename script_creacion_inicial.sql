@@ -312,8 +312,17 @@ GO
 create procedure LOS_QUE_VAN_A_APROBAR.NuevoRol (@NuevoNombre NVARCHAR(20))
 as
 begin
+if exists(select 1 from LOS_QUE_VAN_A_APROBAR.Rol where Nombre = @NuevoNombre)
+begin
+update LOS_QUE_VAN_A_APROBAR.Rol
+set Estado = 'Habilitado'
+where Nombre = @NuevoNombre
+end
+else
+begin
 insert into LOS_QUE_VAN_A_APROBAR.Rol(Nombre)
 values (@Nuevonombre)
+end
 end
 GO
 --
