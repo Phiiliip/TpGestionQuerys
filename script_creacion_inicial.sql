@@ -498,27 +498,23 @@ GO
 
 -- Recorrido
 
-Create procedure LOS_QUE_VAN_A_APROBAR.CrearRecorrido(@CodigoRecorrido decimal(18,2), @Descripcion varchar(50), @Precio decimal(18,2))
+Create procedure LOS_QUE_VAN_A_APROBAR.CrearRecorrido(@CodigoRecorrido decimal(18,2), @Descripcion varchar(50))
 AS
 BEGIN
-INSERT INTO LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido, Descripcion, PrecioTotal)
-VALUES (@CodigoRecorrido, @Descripcion, @Precio)
+INSERT INTO LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido, Descripcion)
+VALUES (@CodigoRecorrido, @Descripcion)
 END
 GO
 --Crear tramo de recorrido
 
-CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.InsertarTramoDeRecorrido(@CodigoRecorrido int, @PuertoSalida NVARCHAR(255), @PuertoLlegada NVARCHAR(255), @Precio decimal(18,2))
+CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.InsertarTramoDeRecorrido(@CodigoRecorrido int, @PuertoSalida NVARCHAR(255), @PuertoLlegada NVARCHAR(255))
 AS
 BEGIN
 declare @CodigoTramo int
-if NOT EXISTS(select 1 from LOS_QUE_VAN_A_APROBAR.Tramo t  where t.Puerto_Llegada = @PuertoLlegada and t.Puerto_Salida = @PuertoSalida)
-begin
-	insert into LOS_QUE_VAN_A_APROBAR.Tramo(Puerto_Salida, Puerto_Llegada, Precio)
-	values(@PuertoSalida, @PuertoLlegada, @Precio)
-end
+
 set @CodigoTramo = (select top(1) IdTramo from LOS_QUE_VAN_A_APROBAR.Tramo where Puerto_Llegada = @PuertoLlegada and Puerto_Salida = @PuertoSalida)
-INSERT INTO LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido, CodigoTramo, PrecioTramo)
-values(@CodigoRecorrido, @CodigoTramo, @Precio)
+INSERT INTO LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo(CodigoRecorrido, CodigoTramo)
+values(@CodigoRecorrido, @CodigoTramo)
 END
 GO
 --modificar tramo de recorrido
@@ -536,12 +532,7 @@ if (@PuertoS != @PuertoSalida)
 THROW 50000, 'The record does not exist.', 1;
 
 ELSE
-begin
-if NOT EXISTS(select 1 from LOS_QUE_VAN_A_APROBAR.Tramo t  where t.Puerto_Llegada = @PuertoLlegada and t.Puerto_Salida = @PuertoSalida)
-begin
-	insert into LOS_QUE_VAN_A_APROBAR.Tramo(Puerto_Salida, Puerto_Llegada)
-	values(@PuertoSalida, @PuertoLlegada)
-end
+
 set @CodigoTramo = (select top(1) IdTramo from LOS_QUE_VAN_A_APROBAR.Tramo where Puerto_Llegada = @PuertoLlegada and Puerto_Salida = @PuertoSalida)
 
 update LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo
@@ -573,13 +564,22 @@ END
 
 ELSE
 BEGIN
-PRINT 'Hay pasajes vendidos para un viaje que todavía no se realizó'
+THROW 50000,'Hay pasajes vendidos para un viaje que todavía no se realizó',1;
 END
 
 END
 GO
 
 
+create procedure LOS_QUE_VAN_A_APROBAR.InsertarTramo(@PuertoSalida nvarchar(255), @PuertoLlegada nvarchar(255), @Precio decimal(18,2))
+as
+begin
+
+insert into LOS_QUE_VAN_A_APROBAR.Tramo(Puerto_Salida, Puerto_Llegada, Precio)
+values(@PuertoSalida, @PuertoLlegada, @Precio)
+
+end
+go
 
 
 
@@ -1309,6 +1309,27 @@ join LOS_QUE_VAN_A_APROBAR.Tramo T on (T.Puerto_Llegada = p.Nombre or T.Puerto_S
 join LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo RPT on T.IdTramo = RPT.CodigoTramo
 where RPT.CodigoRecorrido = @IdReco
 GO
+
+
+create function LOS_QUE_VAN_A_APROBAR.ExisteTramo(@PuertoSalida nvarchar(255), @PuertoLlegada nvarchar(255))
+returns int as
+begin
+
+declare @Resultado int
+
+if exists (select 1 from LOS_QUE_VAN_A_APROBAR.Tramo where Puerto_Llegada = @PuertoLlegada and Puerto_Salida = @PuertoSalida)
+set @Resultado = 0
+
+else
+set @Resultado = 1
+
+return @Resultado
+
+
+end
+go
+
+
 
 -- Puertos extremos de un recorrido
 create function LOS_QUE_VAN_A_APROBAR.PuertosExtremos(@IdReco int)

@@ -115,15 +115,17 @@ return @Resultado
 end
 GO
 
-
+drop function los_que_van_a_aprobar.precioReserva
 create function LOS_QUE_VAN_A_APROBAR.precioReserva(@IdReserva int)
 returns decimal(18,2) as
 begin
 
 declare @Precio decimal(18,2)
 
-set @Precio = (select PrecioTotal from LOS_QUE_VAN_A_APROBAR.Reserva r join LOS_QUE_VAN_A_APROBAR.Viaje v ON (r.IdViaje = v.IdViaje)
+set @Precio = (select SUM(t.Precio) from LOS_QUE_VAN_A_APROBAR.Reserva r join LOS_QUE_VAN_A_APROBAR.Viaje v ON (r.IdViaje = v.IdViaje)
 join LOS_QUE_VAN_A_APROBAR.Recorrido re ON (re.IdRecorrido = v.IdRecorrido)
+join LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo pt ON (pt.CodigoRecorrido = re.IdRecorrido)
+join LOS_QUE_VAN_A_APROBAR.Tramo t ON (pt.CodigoTramo = t.IdTramo)
 where r.IdReserva = @IdReserva
 )
 
@@ -171,6 +173,26 @@ join LOS_QUE_VAN_A_APROBAR.Tramo T on (T.Puerto_Llegada = p.Nombre or T.Puerto_S
 join LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo RPT on T.IdTramo = RPT.CodigoTramo
 where RPT.CodigoRecorrido = @IdReco
 GO
+
+
+create function LOS_QUE_VAN_A_APROBAR.ExisteTramo(@PuertoSalida nvarchar(255), @PuertoLlegada nvarchar(255))
+returns int as
+begin
+
+declare @Resultado int
+
+if exists (select 1 from LOS_QUE_VAN_A_APROBAR.Tramo where Puerto_Llegada = @PuertoLlegada and Puerto_Salida = @PuertoSalida)
+set @Resultado = 0
+
+else
+set @Resultado = 1
+
+return @Resultado
+
+
+end
+go
+
 
 
 -- Puertos extremos de un recorrido
