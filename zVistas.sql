@@ -96,6 +96,7 @@ SELECT v.IdViaje as 'Numero De Viaje', v.IdCrucero as 'Identificador Crucero', v
 			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
 			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Cabina Exterior' AND cast(Fecha_Salida as date) = cast(v.Fecha_Salida as date) AND Estado = 'Disponible')as 'Cantidad Cabina exterior disponibles'
     from LOS_QUE_VAN_A_APROBAR.Viaje v
-	WHERE cast(Fecha_Salida as DATE) > cast((select top(1) * from LOS_QUE_VAN_A_APROBAR.TablaFecha) as DATE) 
+	join LOS_QUE_VAN_A_APROBAR.Recorrido r on r.IdRecorrido = v.IdRecorrido
+	WHERE cast(Fecha_Salida as DATE) > cast((select top(1) * from LOS_QUE_VAN_A_APROBAR.TablaFecha) as DATE) AND r.Estado = 'Habilitado'
 GO
 
