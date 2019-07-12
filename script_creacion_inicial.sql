@@ -180,6 +180,8 @@ create table [LOS_QUE_VAN_A_APROBAR].Usuario(
 NombreUsuario NVARCHAR(100) UNIQUE,
 Contraseña NVARCHAR(255),
 IdRol int REFERENCES LOS_QUE_VAN_A_APROBAR.Rol(IdRol),
+Estado nvarchar(30) default('Habilitado'),
+check(Estado in ('Habilitado','Inhabilitado')),
 PRIMARY KEY(NombreUsuario,Contraseña)
 );
 
@@ -278,6 +280,17 @@ insert into LOS_QUE_VAN_A_APROBAR.Usuario(NombreUsuario, Contraseña, IdRol)
 values(@Username, HASHBYTES('SHA2_256', @Password), @IdRol)
 end
 GO
+
+create procedure LOS_QUE_VAN_A_APROBAR.InhabilitarAdmin(@Username nvarchar(100), @Password nvarchar(255))
+as
+begin
+if exists (select 1 from LOS_QUE_VAN_A_APROBAR.Usuario where NombreUsuario = @Username)
+begin
+update LOS_QUE_VAN_A_APROBAR.Usuario
+set Estado = 'Inhabilitado'
+where NombreUsuario = @Username
+end
+end
 
 --
 
@@ -1302,7 +1315,6 @@ GO
 
 
 
-
 -------------------------------------- Validacion de admin------------------------------------------
 
 
@@ -1312,8 +1324,16 @@ begin
 declare @Resultado tinyint
 if  exists(select * 
 from LOS_QUE_VAN_A_APROBAR.Usuario
-where NombreUsuario = @Username and Contraseña = HASHBYTES('SHA2_256', @Password))
+where NombreUsuario = @Username and Contraseña = HASHBYTES('SHA2_256', @Password) and Estado = 'Inhabilitado')
+begin
+set @Resultado = 2
+end
+else if exists (select * 
+from LOS_QUE_VAN_A_APROBAR.Usuario
+where NombreUsuario = @Username and Contraseña = HASHBYTES('SHA2_256', @Password) and Estado = 'Habilitado')
+begin
 set @Resultado = 1
+end
 else
 begin
 set @Resultado = 0

@@ -48,9 +48,10 @@ end
 GO
 
 
+create function LOS_QUE_VAN_A_APROBAR.FuncionalidadesDeRol(@IdRol
 
 
-select * from LOS_QUE_VAN_A_APROBAR.Viaje order by Fecha_Llegada DESC
+
 
 ---------------------------------- COMPRA Y RESERVA ----------------------------------------------
 
