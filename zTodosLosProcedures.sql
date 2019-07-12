@@ -278,7 +278,6 @@ GO
 
 
 --DAR DE BAJA RECORRIDO
-drop procedure LOS_QUE_VAN_A_APROBAR.BajaRecor
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.BajaRecorrido(@IdRecorrido int)
 AS
 BEGIN
@@ -600,7 +599,7 @@ END
 
 GO
 
-drop procedure LOS_QUE_VAN_A_APROBAR.ChequearReservas
+
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ChequearReservas
 AS
 BEGIN
@@ -659,7 +658,6 @@ GO
 
 ----------------------------------------------------COMPRA Y RESERVA ----------------------------------------------------
 
-drop procedure LOS_QUE_VAN_A_APROBAR.GenerarPasaje
 create procedure LOS_QUE_VAN_A_APROBAR.GenerarPasaje(@IdCliente int, @IdViaje int, @TipoServicio nvarchar(255), @Fecha_Salida datetime2(3))
 AS
 BEGIN
@@ -691,7 +689,6 @@ END
 GO
 
 
-drop procedure LOS_QUE_VAN_A_APROBAR.GenerarReserva
 create procedure LOS_QUE_VAN_A_APROBAR.GenerarReserva(@IdCliente int, @IdViaje int, @TipoServicio nvarchar(255), @Fecha_Salida datetime2(3))
 AS
 BEGIN
@@ -794,8 +791,6 @@ deallocate CursorTramos
 
 end
 go
-
-
 
 
 

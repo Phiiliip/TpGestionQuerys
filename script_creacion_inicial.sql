@@ -1155,7 +1155,6 @@ GO
 
 
 
-select LOS_QUE_VAN_A_APROBAR.IdDeRol('AdminJunior',@Password)
 -------------------------------------- Validacion de admin------------------------------------------
 
 
@@ -1174,8 +1173,6 @@ end
 return @Resultado
 end
 GO
-
-select * from LOS_QUE_VAN_A_APROBAR.Usuario
 
 --- Id de rol dado un usuario
 
