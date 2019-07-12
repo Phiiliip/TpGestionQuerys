@@ -228,7 +228,7 @@ from gd_esquema.Maestra
 
 -- Crucero
 
-insert LOS_QUE_VAN_A_APROBAR.Crucero(IdCrucero,IdMarca,IdModelo,FechaAlta,CantidadCabinas) select DISTINCT CRUCERO_IDENTIFICADOR, m.IdMarca, mo.IdModelo, (select * from LOS_QUE_VAN_A_APROBAR.TablaFecha fe),(MAX(CABINA_NRO) * (MAX(CABINA_PISO)+1)) as TotalCabinas
+insert LOS_QUE_VAN_A_APROBAR.Crucero(IdCrucero,IdMarca,IdModelo,FechaAlta,CantidadCabinas) select DISTINCT CRUCERO_IDENTIFICADOR, m.IdMarca, mo.IdModelo, '2018-01-01 00:00:00.000',(MAX(CABINA_NRO) * (MAX(CABINA_PISO)+1)) as TotalCabinas
 from gd_esquema.Maestra
 join LOS_QUE_VAN_A_APROBAR.Modelo as mo on (CRUCERO_MODELO = mo.Descripcion)
 join LOS_QUE_VAN_A_APROBAR.Marca as m on (CRU_FABRICANTE = m.Descripcion)
@@ -871,6 +871,133 @@ END
 
 GO
 
+create procedure LOS_QUE_VAN_A_APROBAR.reprogramarViajes(@IdCrucero nvarchar(50), @FechaReprogramacion DateTime2(3))
+as
+begin
+declare @Tiempo int = DATEDIFF(day,@FechaReprogramacion, (select top(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha))
+
+declare CursorViajes cursor for
+select IdViaje, Fecha_Salida, Fecha_Llegada from LOS_QUE_VAN_A_APROBAR.Viaje where IdCrucero = @IdCrucero and Fecha_Salida > (select top(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+
+declare @IdViaje int
+declare @Fecha_Salida DateTime2(3)
+declare @Fecha_Llegada Datetime2(3)
+
+open CursorViajes
+
+fetch next from CursorViajes
+into @IdViaje, @Fecha_Salida, @Fecha_Llegada
+
+while @@FETCH_STATUS = 0
+begin
+
+update LOS_QUE_VAN_A_APROBAR.Viaje
+set Fecha_Salida = DATEADD(DAY,@Tiempo,Fecha_Salida), Fecha_Llegada = DATEADD(DAY,@Tiempo,Fecha_Llegada)
+where IdViaje = @IdViaje and IdCrucero = @IdCrucero and Fecha_Salida = @Fecha_Salida and Fecha_Llegada = @Fecha_Llegada
+
+update LOS_QUE_VAN_A_APROBAR.Pasaje
+set Fecha_Salida = DATEADD(DAY,@Tiempo, Fecha_Salida)
+where IdViaje = @IdViaje
+
+update LOS_QUE_VAN_A_APROBAR.Reserva
+set Fecha_Salida = DATEADD(DAY,@Tiempo, Fecha_Salida)
+where IdViaje = @IdViaje
+
+declare CursorCPC Cursor for
+select IdCPC from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero where IdCrucero = @IdCrucero
+
+open CursorCPC
+
+while @@FETCH_STATUS = 0
+begin
+
+update LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+set Fecha_Salida = DATEADD(DAY,@Tiempo,Fecha_Salida)
+where Fecha_Salida = @Fecha_Salida
+end
+
+end
+
+close CursorCPC
+close CursorViajes
+
+deallocate CursorCPC
+deallocate CursorViajes
+
+end
+GO
+
+create procedure LOS_QUE_VAN_A_APROBAR.CambiarViajesDeCrucero(@IdCrucero nvarchar(50))
+as
+begin
+declare @FechaBaja DATETIMe2(3) = (select top(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+declare @CantidadCabinas int = (select CantidadCabinas from LOS_QUE_VAN_A_APROBAR.Crucero where IdCrucero = @IdCrucero)
+
+declare @IdViaje int
+declare @FechaLlegada DateTime2(3)
+declare @FechaSalida DateTime2(3)
+declare @IdCruceroReemplazante nvarchar(50)
+
+declare CursorViaje Cursor for select v.IdViaje, v.Fecha_Llegada, v.Fecha_Salida  from LOS_QUE_VAN_A_APROBAR.Viaje v
+where v.IdCrucero = @IdCrucero and Fecha_Salida > @FechaBaja
+
+declare CURSORCPC Cursor for
+select NroPiso, NroCabina, TipoServicio from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero where IdCrucero = @IdCrucero and Fecha_Salida = @FechaSalida
+
+open CursorViaje
+
+fetch next from CursorViaje into
+@IdViaje, @FechaLlegada, @FechaSalida
+
+while @@FETCH_STATUS = 0
+begin
+
+begin try
+set @IdCruceroReemplazante = (select top(1) c.IdCrucero from LOS_QUE_VAN_A_APROBAR.Viaje v1 join LOS_QUE_VAN_A_APROBAR.Crucero c on v1.IdCrucero = c.IdCrucero where c.FechaAlta < @FechaBaja and c.CantidadCabinas <= @CantidadCabinas and (v1.Fecha_Salida NOT BETWEEN @FechaSalida and @FechaLlegada) and (v1.Fecha_Llegada NOT BETWEEN @FechaSalida and @FechaLlegada))
+end try
+begin catch
+raiserror ('No se pudo hallar ningun crucero para reemplazar el viaje',16,1)
+end catch
+
+update LOS_QUE_VAN_A_APROBAR.Viaje
+set IdCrucero = @IdCruceroReemplazante
+where IdViaje = @IdViaje
+
+exec LOS_QUE_VAN_A_APROBAR.GenerarCabinasPorCrucero @IdCruceroReemplazante, @FechaSalida
+
+declare @NroPiso int
+declare @NroCabina int
+declare @TipoServicio nvarchar(255)
+
+open CURSORCPC
+
+fetch next from CURSORCPC
+into @NroPiso, @NroCabina, @TipoServicio
+
+while @@FETCH_STATUS = 0
+begin
+
+update LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+set Estado = 'Ocupado'
+where IdCrucero = @IdCruceroReemplazante and Fecha_Salida = @FechaSalida and NroPiso = @NroPiso and NroCabina = @NroCabina and TipoServicio = @TipoServicio
+
+fetch next from CURSORCPC
+into @NroPiso, @NroCabina, @TipoServicio
+end
+
+fetch next from CursorViaje into
+@IdViaje, @FechaLlegada, @FechaSalida
+end
+
+close CURSORCPC
+close CursorViaje
+deallocate CURSORCPC
+deallocate CursorViaje
+end
+GO
+
+
+
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ChequearReservas
 AS
 BEGIN
@@ -1486,7 +1613,6 @@ return @Precio
 end
 go
 
-
 -- Recorridos
 
 create view LOS_QUE_VAN_A_APROBAR.ListarRecorridos
@@ -1546,4 +1672,3 @@ join Rol as r on r.IdRol = c.IdRol
 where r.Estado = 'Inhabilitado'
 end
 GO
-
