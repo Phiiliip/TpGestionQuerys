@@ -174,12 +174,12 @@ Estado NVARCHAR(20) DEFAULT('Habilitado'),
 check(Estado in('Habilitado','Inhabilitado'))
 );
 
--- Administrador
+-- Usuario
 
-create table [LOS_QUE_VAN_A_APROBAR].Administrador(
+create table [LOS_QUE_VAN_A_APROBAR].Usuario(
 NombreUsuario NVARCHAR(100) UNIQUE,
 Contraseña NVARCHAR(255),
-IdRol int REFERENCES LOS_QUE_VAN_A_APROBAR.Rol(IdRol) Default(2),
+IdRol int REFERENCES LOS_QUE_VAN_A_APROBAR.Rol(IdRol),
 PRIMARY KEY(NombreUsuario,Contraseña)
 );
 
@@ -198,6 +198,9 @@ values('Cliente')
 
 insert LOS_QUE_VAN_A_APROBAR.Rol(Nombre)
 values('Administrador')
+
+insert LOS_QUE_VAN_A_APROBAR.Rol(Nombre)
+values('Admin junior')
 
 
 --Cliente
@@ -247,7 +250,8 @@ values('Menu CyR'),('Menu puerto'),('Menu viajes'),('Menu rol'),('Menu crucero')
 -- Funcionalidad por rol
 
 insert LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol(IdFuncionalidad,IdRol)
-values (1,2),(2,2),(3,2),(4,2),(5,2),(6,2),(7,2)
+values (1,2),(2,2),(3,2),(4,2),(5,2),(6,2),(7,2), (1,3), (2,3), (7,3)
+
 
 
 --
@@ -264,26 +268,30 @@ values (1,2),(2,2),(3,2),(4,2),(5,2),(6,2),(7,2)
 
 
 
+
+-- Creacion de usuario con rol
 GO
--- Creacion de administrador
-create procedure LOS_QUE_VAN_A_APROBAR.CrearAdministrador(@Username NVARCHAR(100), @Password NVARCHAR(100))
+create procedure LOS_QUE_VAN_A_APROBAR.CrearUsuarioConRol(@Username nvarchar(100), @Password nvarchar(255), @IdRol int)
 as
 begin
-insert LOS_QUE_VAN_A_APROBAR.Administrador(NombreUsuario,Contraseña)
-values (@Username, HASHBYTES('SHA2_256', @Password))
+insert into LOS_QUE_VAN_A_APROBAR.Usuario(NombreUsuario, Contraseña, IdRol)
+values(@Username, HASHBYTES('SHA2_256', @Password), @IdRol)
 end
 GO
+
 --
 
 -- Administradores de prueba
 
-exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'FelipeOtero', 'w23e'
+exec LOS_QUE_VAN_A_APROBAR.CrearUsuarioConRol 'FelipeOtero', 'w23e', 2
 GO
-exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'EmanuelSedlar', 'w23e'
+exec LOS_QUE_VAN_A_APROBAR.CrearUsuarioConRol 'EmanuelSedlar', 'w23e', 2
 GO
-exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'NicolasMarchesotti', 'w23e'
+exec LOS_QUE_VAN_A_APROBAR.CrearUsuarioConRol 'NicolasMarchesotti', 'w23e', 2
 GO
-exec LOS_QUE_VAN_A_APROBAR.CrearAdministrador 'admin', 'w23e'
+exec LOS_QUE_VAN_A_APROBAR.CrearUsuarioConRol 'admin', 'w23e', 2
+GO
+exec LOS_QUE_VAN_A_APROBAR.CrearUsuarioConRol 'AdminJunior', 'w23e', 3
 GO
 
 
@@ -1147,16 +1155,16 @@ GO
 
 
 
-
+select LOS_QUE_VAN_A_APROBAR.IdDeRol('AdminJunior',@Password)
 -------------------------------------- Validacion de admin------------------------------------------
 
 
-create function LOS_QUE_VAN_A_APROBAR.ValidarAdministrador(@Username NVARCHAR(100), @Password NVARCHAR(100))
+create function LOS_QUE_VAN_A_APROBAR.ValidarUsuario(@Username NVARCHAR(100), @Password NVARCHAR(100))
 returns int as
 begin
 declare @Resultado tinyint
 if  exists(select * 
-from LOS_QUE_VAN_A_APROBAR.Administrador
+from LOS_QUE_VAN_A_APROBAR.Usuario
 where NombreUsuario = @Username and Contraseña = HASHBYTES('SHA2_256', @Password))
 set @Resultado = 1
 else
@@ -1167,7 +1175,7 @@ return @Resultado
 end
 GO
 
-
+select * from LOS_QUE_VAN_A_APROBAR.Usuario
 
 --- Id de rol dado un usuario
 
@@ -1175,11 +1183,10 @@ create function LOS_QUE_VAN_A_APROBAR.IdDeRol(@Username NVARCHAR(100), @Password
 returns int as
 begin
 declare @Resultado int
-set @Resultado = (select top(1) IdRol from LOS_QUE_VAN_A_APROBAR.Administrador where NombreUsuario = @Username and Contraseña = HASHBYTES('SHA2_256',@Password))
+set @Resultado = (select top(1) IdRol from LOS_QUE_VAN_A_APROBAR.Usuario where NombreUsuario = @Username and Contraseña = HASHBYTES('SHA2_256',@Password))
 return @Resultado
 end
 GO
-
 
 ---------------------------------- COMPRA Y RESERVA ----------------------------------------------
 
