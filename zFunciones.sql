@@ -196,7 +196,6 @@ return @Retorno
 end
 GO
 
-drop function LOS_QUE_VAN_A_APROBAR.PrecioViaje
 create function LOS_QUE_VAN_A_APROBAR.PrecioViaje(@IdViaje int)
 returns decimal(18,2) as
 begin
