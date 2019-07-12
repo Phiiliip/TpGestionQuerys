@@ -177,6 +177,23 @@ return @Retorno
 end
 GO
 
+create function LOS_QUE_VAN_A_APROBAR.ClienteNoPuedeReservar(@IdCliente int, @FechaSalida DateTime2(3), @IdViaje int)
+returns int
+as
+begin
+declare @Retorno int
+if exists (select 1 from LOS_QUE_VAN_A_APROBAR.Reserva r join LOS_QUE_VAN_A_APROBAR.Viaje v on v.IdViaje = r.IdViaje where r.IdCliente = @IdCliente and v.IdViaje != @IdViaje and @FechaSalida between v.Fecha_Salida and v.Fecha_Llegada)
+begin
+set @Retorno = 0
+end
+else
+begin
+set @Retorno = 1
+end
+return @Retorno
+end
+GO
+
 
 
 ---- Recorrido
