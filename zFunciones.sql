@@ -262,3 +262,10 @@ end
 GO
 
 
+
+create procedure LOS_QUE_VAN_A_APROBAR.CrearUsuarioConRol(@Username nvarchar(100), @Password nvarchar(255), @IdRol int)
+as
+begin
+insert into LOS_QUE_VAN_A_APROBAR.Usuario(NombreUsuario, Contraseña, IdRol)
+values(@Username, @Password, @IdRol)
+end

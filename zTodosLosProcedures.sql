@@ -2,12 +2,11 @@
 
 
 GO
--- Creacion de administrador
-create procedure LOS_QUE_VAN_A_APROBAR.CrearAdministrador(@Username NVARCHAR(100), @Password NVARCHAR(100))
+create procedure LOS_QUE_VAN_A_APROBAR.CrearUsuarioConRol(@Username nvarchar(100), @Password nvarchar(255), @IdRol int)
 as
 begin
-insert LOS_QUE_VAN_A_APROBAR.Administrador(NombreUsuario,Contraseña)
-values (@Username, HASHBYTES('SHA2_256', @Password))
+insert into LOS_QUE_VAN_A_APROBAR.Usuario(NombreUsuario, Contraseña, IdRol)
+values(@Username, HASHBYTES('SHA2_256', @Password), @IdRol)
 end
 GO
 --
@@ -278,7 +277,6 @@ GO
 
 
 --DAR DE BAJA RECORRIDO
-drop procedure LOS_QUE_VAN_A_APROBAR.BajaRecor
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.BajaRecorrido(@IdRecorrido int)
 AS
 BEGIN
@@ -604,7 +602,7 @@ END
 
 GO
 
-drop procedure LOS_QUE_VAN_A_APROBAR.ChequearReservas
+
 CREATE PROCEDURE LOS_QUE_VAN_A_APROBAR.ChequearReservas
 AS
 BEGIN
@@ -663,7 +661,6 @@ GO
 
 ----------------------------------------------------COMPRA Y RESERVA ----------------------------------------------------
 
-drop procedure LOS_QUE_VAN_A_APROBAR.GenerarPasaje
 create procedure LOS_QUE_VAN_A_APROBAR.GenerarPasaje(@IdCliente int, @IdViaje int, @TipoServicio nvarchar(255), @Fecha_Salida datetime2(3))
 AS
 BEGIN
@@ -695,7 +692,6 @@ END
 GO
 
 
-drop procedure LOS_QUE_VAN_A_APROBAR.GenerarReserva
 create procedure LOS_QUE_VAN_A_APROBAR.GenerarReserva(@IdCliente int, @IdViaje int, @TipoServicio nvarchar(255), @Fecha_Salida datetime2(3))
 AS
 BEGIN
@@ -798,8 +794,6 @@ deallocate CursorTramos
 
 end
 go
-
-
 
 
 
