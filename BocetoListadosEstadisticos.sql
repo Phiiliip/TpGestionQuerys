@@ -20,21 +20,25 @@ order by CantidadDePasajesComprados ASC
 
 ---LISTADO RECORRIDOS CON MAS CABINAS LIBRES EN CADA VIAJE
 
-SELECT TOP 5 r1.Codigo_Recorrido as CodigoRecorrido, r1.PrecioTotal, v1.IdViaje, v1.Fecha_Salida, c1.IdCrucero, (c1.CantidadCabinas - (select count(p1.IdPasaje)  from LOS_QUE_VAN_A_APROBAR.Pasaje p1 where (p1.IdViaje = v1.IdViaje))) as CantidadCabinasLibres
+SELECT TOP 5 r1.IdRecorrido, r1.PrecioTotal, v1.IdViaje, v1.Fecha_Salida, c1.IdCrucero, 
+			(c1.CantidadCabinas - (select count(p1.IdPasaje)  from LOS_QUE_VAN_A_APROBAR.Pasaje p1 
+										where (p1.IdViaje = v1.IdViaje))) as CantidadCabinasLibres
 
 from LOS_QUE_VAN_A_APROBAR.Recorrido r1 join LOS_QUE_VAN_A_APROBAR.Viaje v1 on (r1.IdRecorrido = v1.IdRecorrido)
 		join LOS_QUE_VAN_A_APROBAR.Crucero c1 on (v1.IdCrucero = c1.IdCrucero)
-
+where MONTH(v1.Fecha_Salida) > 6 AND YEAR(v1.Fecha_Salida)= 2019
 order by CantidadCabinasLibres DESC
 
-select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero where IdCrucero= 'ASHFLJ-66175' and Fecha_Salida = '2018-02-01 05:00:00.000'
 
-select CantidadCabinas from LOS_QUE_VAN_A_APROBAR.Crucero where IdCrucero =  'ASHFLJ-66175'
+SELECT TOP 5 r1.IdRecorrido, (select sum(rpt1.PrecioTramo) as PrecioTotal from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo rpt1 where (rpt1.CodigoRecorrido = r1.IdRecorrido)), v1.IdViaje, v1.Fecha_Salida, c1.IdCrucero, 
+			(c1.CantidadCabinas - (select count(p1.IdPasaje)  from LOS_QUE_VAN_A_APROBAR.Pasaje p1 
+										where (p1.IdViaje = v1.IdViaje))) as CantidadCabinasLibres
 
-select count(*) as CabinasOcupadas, cpc.Fecha_Salida, ((select c1.CantidadCabinas from LOS_QUE_VAN_A_APROBAR.Crucero c1 where c1.IdCrucero =  'ASHFLJ-66175')-count(*) ) as CabinasLibres
-from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero cpc  where cpc.IdCrucero= 'ASHFLJ-66175' 
-group by cpc.Fecha_Salida
-order by CabinasLibres DESC
+from LOS_QUE_VAN_A_APROBAR.Recorrido r1 join LOS_QUE_VAN_A_APROBAR.Viaje v1 on (r1.IdRecorrido = v1.IdRecorrido)
+		join LOS_QUE_VAN_A_APROBAR.Crucero c1 on (v1.IdCrucero = c1.IdCrucero)
+where MONTH(v1.Fecha_Salida) <= 6 AND YEAR(v1.Fecha_Salida)= 2019
+order by CantidadCabinasLibres DESC
+
 
 
 
