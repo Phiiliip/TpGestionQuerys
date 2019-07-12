@@ -202,8 +202,7 @@ returns decimal(18,2) as
 begin
 declare @Precio decimal(18,2)
 
-set @Precio = (select SUM(t.Precio) from LOS_QUE_VAN_A_APROBAR.Viaje v join LOS_QUE_VAN_A_APROBAR.Recorrido r ON (r.IdRecorrido = v.CodigoRecorrido)
-				join LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo rpt ON (rpt.CodigoRecorrido = r.IdRecorrido)
+set @Precio = (select SUM(t.Precio) from LOS_QUE_VAN_A_APROBAR.Viaje v join LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo rpt ON (rpt.CodigoRecorrido = v.IdRecorrido)
 				JOIN LOS_QUE_VAN_A_APROBAR.Tramo t ON (t.IdTramo = rpt.CodigoTramo)
 				where v.IdViaje = @IdViaje)
 
