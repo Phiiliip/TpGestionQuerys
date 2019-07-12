@@ -30,7 +30,7 @@ where MONTH(v1.Fecha_Salida) > 6 AND YEAR(v1.Fecha_Salida)= 2019
 order by CantidadCabinasLibres DESC
 
 
-SELECT TOP 5 r1.IdRecorrido, (select sum(rpt1.PrecioTramo) as PrecioTotal from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo rpt1 where (rpt1.CodigoRecorrido = r1.IdRecorrido)), v1.IdViaje, v1.Fecha_Salida, c1.IdCrucero, 
+SELECT TOP 5 r1.IdRecorrido, (select sum(rpt1.PrecioTramo) as PrecioTotal from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo rpt1 where (rpt1.CodigoRecorrido = r1.IdRecorrido)) as PrecioTotal, v1.IdViaje, v1.Fecha_Salida, c1.IdCrucero, 
 			(c1.CantidadCabinas - (select count(p1.IdPasaje)  from LOS_QUE_VAN_A_APROBAR.Pasaje p1 
 										where (p1.IdViaje = v1.IdViaje))) as CantidadCabinasLibres
 
