@@ -390,9 +390,17 @@ GO
 create procedure LOS_QUE_VAN_A_APROBAR.AltaFuncionalidadDelRol(@IdRol int, @IdFuncionalidad int)
 as
 begin
+if exists (select 1 from LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol where IdRol = @IdRol and IdFuncionalidad = @IdFuncionalidad)
+begin
 update LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol
 set Estado = 'Habilitado'
 where IdRol = @IdRol and IdFuncionalidad = @IdFuncionalidad
+end
+else
+begin
+insert into LOS_QUE_VAN_A_APROBAR.FuncionalidadPorRol(IdFuncionalidad,IdRol)
+values(@IdFuncionalidad,@IdRol)
+end
 end
 GO
 
@@ -1337,6 +1345,7 @@ RETURN
 			 (select count(*) from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
 			 where IdCrucero = v.IdCrucero AND TipoServicio = 'Cabina Exterior' AND cast(Fecha_Salida as date) = cast(@Fecha_Salida as date) AND Estado = 'Disponible')'Cantidad Cabina exterior disponibles'
     from LOS_QUE_VAN_A_APROBAR.Viaje v
+	join LOS_QUE_VAN_A_APROBAR.Recorrido r on v.IdRecorrido = r.IdRecorrido
 	WHERE cast(Fecha_Salida as DATE) = cast(@Fecha_Salida as DATE) AND CAST(Fecha_Salida as date) > CAST((select top 1 * from LOS_QUE_VAN_A_APROBAR.TablaFecha) as date)
 	AND @Puerto_Salida IN (select Puerto_Salida from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo r
 							JOIN LOS_QUE_VAN_A_APROBAR.Tramo t ON (r.CodigoTramo = t.IdTramo)
@@ -1344,6 +1353,7 @@ RETURN
 	AND @Puerto_Llegada IN (SELECT Puerto_Llegada from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo r
 							JOIN LOS_QUE_VAN_A_APROBAR.Tramo t ON (r.CodigoTramo = t.IdTramo)
 							where r.CodigoRecorrido = V.IdRecorrido)
+	AND r.Estado = 'Habilitado'
 GO
 
 
