@@ -122,13 +122,17 @@ returns decimal(18,2) as
 begin
 
 declare @Precio decimal(18,2)
+declare @Porcentaje decimal (18,2)
+
 
 set @Precio = (select SUM(t.Precio) from LOS_QUE_VAN_A_APROBAR.Reserva r join LOS_QUE_VAN_A_APROBAR.Viaje v ON (r.IdViaje = v.IdViaje)
-join LOS_QUE_VAN_A_APROBAR.Recorrido re ON (re.IdRecorrido = v.IdRecorrido)
-join LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo pt ON (pt.CodigoRecorrido = re.IdRecorrido)
+join LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo pt ON (pt.CodigoRecorrido = v.IdRecorrido)
 join LOS_QUE_VAN_A_APROBAR.Tramo t ON (pt.CodigoTramo = t.IdTramo)
 where r.IdReserva = @IdReserva
-)
+) * (select porcentaje from LOS_QUE_VAN_A_APROBAR.Reserva r join LOS_QUE_VAN_A_APROBAR.Viaje v ON (v.IdViaje = r.IdViaje)
+		join LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero cpc ON (v.IdCrucero = cpc.IdCrucero AND v.Fecha_Salida = cpc.Fecha_Salida AND cpc.NroPiso = r.NroPiso AND cpc.NroCabina = r.NroCabina)
+		join LOS_QUE_VAN_A_APROBAR.Servicio s ON (s.TipoServicio = cpc.TipoServicio)
+		where r.IdReserva = @IdReserva)
 
 return @Precio
 END
