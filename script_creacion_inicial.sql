@@ -1324,6 +1324,23 @@ end
 GO
 
 
+create function LOS_QUE_VAN_A_APROBAR.ClienteNoPuedeComprar(@IdCliente int, @FechaSalida DateTime2(3), @IdViaje int)
+returns int
+as
+begin
+declare @Retorno int
+if exists (select 1 from LOS_QUE_VAN_A_APROBAR.Pasaje p join LOS_QUE_VAN_A_APROBAR.Viaje v on v.IdViaje = p.IdViaje where p.IdCliente = @IdCliente and v.IdViaje != @IdViaje and @FechaSalida between v.Fecha_Salida and v.Fecha_Llegada)
+begin
+set @Retorno = 0
+end
+else
+begin
+set @Retorno = 1
+end
+return @Retorno
+end
+GO
+
 
 
 
