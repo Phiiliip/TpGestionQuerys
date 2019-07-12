@@ -50,7 +50,6 @@ join LOS_QUE_VAN_A_APROBAR.Viaje as v on v.IdCrucero = c.IdCrucero
 where (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha) between v.Fecha_Salida and v.Fecha_Llegada 
 GO
 
-
 -- Recorridos
 
 create view LOS_QUE_VAN_A_APROBAR.ListarRecorridos
@@ -58,10 +57,12 @@ as
 select RPT.CodigoRecorrido, t1.Puerto_Salida as PuertoSalida, t2.Puerto_Llegada as PuertoLlegada, COUNT(CodigoTramo) as CantidadDeTramos, (select SUM(PrecioTramo) from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo where CodigoRecorrido = RPT.CodigoRecorrido) as PrecioDeRecorrido from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo as RPT
 join LOS_QUE_VAN_A_APROBAR.Tramo t1 on (select MIN(CodigoTramo) from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo where CodigoRecorrido = RPT.CodigoRecorrido) = t1.IdTramo
 join LOS_QUE_VAN_A_APROBAR.Tramo t2 on (select MAX(CodigoTramo) from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo where CodigoRecorrido = RPT.CodigoRecorrido) = t2.IdTramo
+join LOS_QUE_VAN_A_APROBAR.Recorrido r on RPT.CodigoRecorrido = r.IdRecorrido
+where r.Estado = 'Habilitado'
 group by RPT.CodigoRecorrido, t1.Puerto_Salida, t2.Puerto_Llegada
 GO
 
-
+select * from 
 
 -- Roles
 
