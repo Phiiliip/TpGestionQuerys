@@ -264,24 +264,25 @@ return @Retorno
 end
 GO
 
---
+-- 
 create function LOS_QUE_VAN_A_APROBAR.VerificarBajaRecorrido(@IdRecorrido int)
 returns int
 as
 begin
 declare @Retorno int
-IF NOT EXISTS (SELECT R.IdRecorrido
-FROM LOS_QUE_VAN_A_APROBAR.Viaje v 
- JOIN LOS_QUE_VAN_A_APROBAR.Recorrido r ON (v.IdRecorrido = r.IdRecorrido)
-WHERE v.Fecha_Salida > (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha) AND v.IdRecorrido = @IdRecorrido and v.IdViaje not in (select IdViaje from LOS_QUE_VAN_A_APROBAR.Pasaje)
+IF EXISTS (select 1 from LOS_QUE_VAN_A_APROBAR.Pasaje p join LOS_QUE_VAN_A_APROBAR.Viaje v on p.IdViaje = v.IdViaje
+where v.IdRecorrido = @IdRecorrido and v.Fecha_Salida > (select top(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha)
 )
 BEGIN
-set @Retorno = 1
+set @Retorno = 0
 END
 ELSE
 BEGIN
-set @Retorno = 0
+set @Retorno = 1
 END
 return @Retorno
 END
 GO
+
+
+
