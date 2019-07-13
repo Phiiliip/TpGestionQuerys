@@ -367,13 +367,17 @@ values (@IdFuncionalidad, @IdRol)
 end
 GO
 
+
 --
 create procedure LOS_QUE_VAN_A_APROBAR.ModificarRol(@IdRol int, @Nombre NVARCHAR(20))
 as
 begin
+if not exists (select 1 from LOS_QUE_VAN_A_APROBAR.Rol where Nombre=@Nombre)
+begin
 update LOS_QUE_VAN_A_APROBAR.Rol
 set Nombre = @Nombre
 where IdRol = @IdRol
+end
 end
 GO
 --
@@ -464,8 +468,11 @@ GO
 create procedure LOS_QUE_VAN_A_APROBAR.CrearPuerto(@NombrePuerto NVARCHAR(255), @Descripcion VARCHAR(50))
 as
 begin
+if not exists (select 1 from LOS_QUE_VAN_A_APROBAR.Puerto where Nombre =@NombrePuerto)
+begin
 insert into LOS_QUE_VAN_A_APROBAR.Puerto(Nombre,Descripcion)
 values(@NombrePuerto,@Descripcion)
+end
 end
 GO
 -- Modificar puerto
@@ -543,15 +550,17 @@ GO
 
 
 
-
 -- Recorrido
 
 Create procedure LOS_QUE_VAN_A_APROBAR.CrearRecorrido(@CodigoRecorrido decimal(18,2), @Descripcion varchar(50))
 AS
 BEGIN
+if not exists (select 1 from LOS_QUE_VAN_A_APROBAR.Recorrido where Codigo_Recorrido = @CodigoRecorrido)
+begin
 INSERT INTO LOS_QUE_VAN_A_APROBAR.Recorrido(Codigo_Recorrido, Descripcion)
 VALUES (@CodigoRecorrido, @Descripcion)
 END
+end
 GO
 --Crear tramo de recorrido
 
@@ -642,8 +651,11 @@ go
 create procedure LOS_QUE_VAN_A_APROBAR.AltaCrucero(@IdCrucero NVARCHAR(50), @IdMarca int, @IdModelo int, @CantidadCabinas int)
 as
 begin
+if not exists (select 1 from LOS_QUE_VAN_A_APROBAR.Crucero where IdCrucero = @IdCrucero)
+begin
 insert LOS_QUE_VAN_A_APROBAR.Crucero(IdCrucero,IdMarca,IdModelo,FechaAlta,CantidadCabinas)
 values(@IdCrucero,@IdMarca,@IdModelo,(select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha), @CantidadCabinas)
+end
 end
 GO
 -- Modificar Marca y modelo de crucero
