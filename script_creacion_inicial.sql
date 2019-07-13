@@ -1415,7 +1415,7 @@ returns table as
 return
 select r.IdReserva,v.IdViaje, v.IdCrucero, r.NroCabina, r.NroPiso ,v.Fecha_Salida, v.Fecha_Llegada, v.CodigoRecorrido from LOS_QUE_VAN_A_APROBAR.Reserva r
 join LOS_QUE_VAN_A_APROBAR.Viaje v on (v.IdViaje = r.IdViaje)
-where IdCliente = @IdCliente and r.IdViaje = @IdViaje
+where IdCliente = @IdCliente and r.IdViaje = @IdViaje and r.Estado = 'Disponible'
 GO
 
 
