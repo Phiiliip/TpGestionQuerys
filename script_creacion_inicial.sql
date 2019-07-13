@@ -1531,7 +1531,6 @@ END
 GO
 
 
-
 -- Puertos extremos de un recorrido
 create function LOS_QUE_VAN_A_APROBAR.PuertosExtremos(@IdReco int)
 returns NVARCHAR(255)
@@ -1604,8 +1603,7 @@ select DISTINCT C.IdCrucero, M.Descripcion as Marca, Mo.Descripcion as Modelo, C
 from LOS_QUE_VAN_A_APROBAR.Crucero as c
 join LOS_QUE_VAN_A_APROBAR.Marca as M on c.IdMarca = M.IdMarca
 join LOS_QUE_VAN_A_APROBAR.Modelo as Mo on c.IdModelo = Mo.IdModelo
-where c.FechaAlta < (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha)
-
+where c.FechaAlta <= (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha) and c.FechaAlta IS NOT NULL
 GO
 
 create view LOS_QUE_VAN_A_APROBAR.ListarCrucerosInhabilitados
