@@ -46,12 +46,14 @@ order by CantidadCabinasLibres DESC
 
 ----LISTADO CANTIDAD DIAS FUERA DE SERVICIO-----
 
-select TOP 5 c1.IdCrucero, m1.Descripcion as Marca, m2.Descripcion as Modelo, sum(LOS_QUE_VAN_A_APROBAR.diasFuera(2019,2,f1.FechaBaja, f1.FechaReinicio)) as CantidadDiasFueraDeServicio
+select TOP 5 c1.IdCrucero, m1.Descripcion as Marca, m2.Descripcion as Modelo, sum(isnull(LOS_QUE_VAN_A_APROBAR.diasFuera(2019,1,f1.FechaBaja, f1.FechaReinicio),0)) as CantidadDiasFueraDeServicio
 
 from LOS_QUE_VAN_A_APROBAR.FueraDeServicio f1 join LOS_QUE_VAN_A_APROBAR.Crucero c1 on (f1.IdCrucero = c1.IdCrucero) 
 join LOS_QUE_VAN_A_APROBAR.Marca m1 on (c1.IdMarca = m1.IdMarca) join LOS_QUE_VAN_A_APROBAR.Modelo m2 on (c1.IdModelo = m2.IdModelo)
 
+
 group by c1.IdCrucero, m1.Descripcion, m2.Descripcion
+having sum(LOS_QUE_VAN_A_APROBAR.diasFuera(2019,1,f1.FechaBaja, f1.FechaReinicio)) <> 0
 
 order by CantidadDiasFueraDeServicio DESC
 
