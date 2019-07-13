@@ -314,6 +314,15 @@ values(@PuertoSalida, @PuertoLlegada, @Precio)
 end
 go
 
+create procedure LOS_QUE_VAN_A_APROBAR.EliminarUltimoTramo(@IdRecorrido int)
+as
+begin
+
+delete from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo
+where CodigoRecorrido = @IdRecorrido and CodigoTramo = (Select top 1 CodigoTramo from LOS_QUE_VAN_A_APROBAR.RecorridoPorTramo where CodigoRecorrido = @IdRecorrido order by orden desc)
+
+end
+go
 
 
 
