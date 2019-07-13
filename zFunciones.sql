@@ -264,11 +264,24 @@ return @Retorno
 end
 GO
 
-
-
-create procedure LOS_QUE_VAN_A_APROBAR.CrearUsuarioConRol(@Username nvarchar(100), @Password nvarchar(255), @IdRol int)
+--
+create function LOS_QUE_VAN_A_APROBAR.VerificarBajaRecorrido(@IdRecorrido int)
+returns int
 as
 begin
-insert into LOS_QUE_VAN_A_APROBAR.Usuario(NombreUsuario, Contraseña, IdRol)
-values(@Username, @Password, @IdRol)
-end
+declare @Retorno int
+IF NOT EXISTS (SELECT R.IdRecorrido
+FROM LOS_QUE_VAN_A_APROBAR.Viaje v 
+ JOIN LOS_QUE_VAN_A_APROBAR.Recorrido r ON (v.IdRecorrido = r.IdRecorrido)
+WHERE v.Fecha_Salida > (select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha) AND v.IdRecorrido = @IdRecorrido and v.IdViaje not in (select IdViaje from LOS_QUE_VAN_A_APROBAR.Pasaje)
+)
+BEGIN
+set @Retorno = 1
+END
+ELSE
+BEGIN
+set @Retorno = 0
+END
+return @Retorno
+END
+GO
