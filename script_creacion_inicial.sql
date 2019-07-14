@@ -279,6 +279,8 @@ values (1,2),(2,2),(3,2),(4,2),(5,2),(6,2),(7,2), (1,3), (2,3), (7,3)
 
 
 
+
+
 -- Creacion de usuario con rol
 GO
 create procedure LOS_QUE_VAN_A_APROBAR.CrearUsuarioConRol(@Username nvarchar(100), @Password nvarchar(255), @IdRol int)
@@ -697,6 +699,105 @@ values(@IdCrucero,(select TOP(1) Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha), '
 end
 GO
 
+
+create procedure LOS_QUE_VAN_A_APROBAR.cambioCrucero(@tiempo int,@IdCruceroViejo nvarchar(50))
+as
+begin
+
+
+
+declare @Fecha_actual datetime2(3)
+declare @CantidadCabinas int
+declare @NroPiso int
+declare @NroCabina int
+declare @TipoServicio nvarchar(255)
+
+set @CantidadCabinas = (select top(1) CantidadCabinas from LOS_QUE_VAN_A_APROBAR.Crucero where IdCrucero = @IdCruceroViejo)
+ 
+set @Fecha_actual = (select top 1 Fecha from LOS_QUE_VAN_A_APROBAR.TablaFecha)
+declare @IdViaje int
+
+
+declare cur_viajes cursor for
+select IdViaje from LOS_QUE_VAN_A_APROBAR.Viaje
+where Fecha_Salida > @Fecha_actual
+
+ 
+
+open cur_viajes
+
+
+fetch next from cur_viajes into @IdViaje
+
+
+while @@FETCH_STATUS = 0
+
+begin
+
+	declare @CruceroNuevo nvarchar(50)
+	declare @FechaSalidaNueva datetime2(3)
+	declare @FechaLlegadaNueva datetime2(3)
+	declare @FechaSalidaVieja datetime2(3)
+	declare @FechaLlegadaVieja datetime2(3)
+		
+	
+	
+	select @FechaSalidaVieja = Fecha_Salida, @FechaLlegadaVieja = Fecha_Llegada from LOS_QUE_VAN_A_APROBAR.Viaje where IdViaje = @IdViaje
+	
+	set @FechaSalidaNueva = dateadd(DAY,@tiempo,@FechaSalidaVieja)
+	set @FechaLlegadaNueva = dateadd(day, @tiempo, @FechaLlegadaVieja)
+begin try
+	set @CruceroNuevo = (select top 1 IdCrucero from LOS_QUE_VAN_A_APROBAR.crucerosParaViaje(@FechaSalidaNueva, @FechaLlegadaNueva) where @CantidadCabinas >= CantidadCabinas)
+end try
+begin catch
+	throw 50000, 'no hay crucero disponible',1;
+end catch 
+
+	if (@CruceroNuevo IS NULL)
+		throw 50000, ' no hay cruceros',1;
+	else
+	begin
+
+	
+	update LOS_QUE_VAN_A_APROBAR.Viaje
+	set IdCrucero = @CruceroNuevo, Fecha_Salida = @FechaSalidaNueva, Fecha_Llegada = @FechaLlegadaNueva
+	where IdViaje = @IdViaje
+
+	exec LOS_QUE_VAN_A_APROBAR.GenerarCabinasPorCrucero @CruceroNuevo , @FechaSalidaNueva
+	
+	update LOS_QUE_VAN_A_APROBAR.Pasaje
+	set Fecha_Salida = @FechaSalidaNueva
+	where IdViaje = @IdViaje
+
+	update LOS_QUE_VAN_A_APROBAR.Reserva
+	set Fecha_Salida = @FechaSalidaNueva
+	where IdViaje = @IdViaje
+
+	declare cur_cabinas cursor for
+	select TipoServicio, NroPiso, NroCabina from LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+	where IdCrucero = @CruceroNuevo and Fecha_Salida = @FechaSalidaNueva
+
+	open cur_cabinas
+
+	fetch next from cur_cabinas
+	into @TipoServicio, @NroPiso, @NroCabina
+
+	while @@FETCH_STATUS = 0
+	begin
+
+	update LOS_QUE_VAN_A_APROBAR.CabinaPorCrucero
+	set NroPiso = @NroPiso, NroCabina = @NroCabina, TipoServicio = @TipoServicio
+	where IdCrucero = @CruceroNuevo and Fecha_Salida = @FechaSalidaNueva
+
+	fetch next from cur_cabinas
+	into @TipoServicio, @NroPiso, @NroCabina
+
+	end
+
+	end
+	fetch next from cur_viajes into @IdViaje
+end
+end
 
 --- Generar las cabinas para un crucero
 
